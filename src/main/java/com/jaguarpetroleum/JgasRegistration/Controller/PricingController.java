@@ -112,15 +112,15 @@ public class PricingController {
 		return response;
 	}
 	
-	@GetMapping("/defaultLocations/{phoneNumber}")
-	public JSONObject getDefaultLocations(@PathVariable String phoneNumber){
+	@GetMapping("/defaultLocations/{phoneNumber}/{locationId}")
+	public JSONObject getDefaultLocations(@PathVariable String phoneNumber, @PathVariable String locationId){
 		logger.info("Get geocordinates for number "+phoneNumber);
 		JSONObject response = new JSONObject();
 		try {
 			Registration register = new Registration();
 			register = registrationService.findByPhoneNumber(phoneNumber);
 			Location location = new Location();
-			location = locationService.findByLocationId("KNTC");
+			location = locationService.findByLocationId(locationId.toUpperCase());
 			response.put("pickLatitude", location.getLatitude());
 			response.put("pickLongitude", location.getLongitude());
 			response.put("dropLatitude", register.getLatitude());
