@@ -33,6 +33,8 @@ public class MpesaIntegration {
 	@Autowired
 	OrderHDService orderHDService;
 	
+	FirebaseIntegration fbi = new FirebaseIntegration();
+	
 	@PostMapping("/stkPush")
 	public JSONObject stkPush(@RequestBody JSONObject details) {
 		logger.info("Received STKPush request "+details);
@@ -129,11 +131,21 @@ public class MpesaIntegration {
                 
               //Update the order record with payment details
                 orderHDService.updatePaymentDetails(checkoutRequestId, transactionRef, (resultCode == 0) ? 1 : 0, resultDesc, (resultCode == 0) ? "Order Successful" : "Payment Processing Failed");
+               
+                if(resultCode == 0) {
+                	AfricasTalkingIntegration africasTalking = new AfricasTalkingIntegration();
+                	africasTalking.sendSms(phoneNumber, 
+                    		"Dear Customer, we have received your payment for your gas order no. "+orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo()+". We are currently processing it. ");
+                    
+                    JSONObject fbiNotification = new JSONObject();
+                    fbiNotification.put("orderNo", orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo());
+                    fbiNotification.put("location", orderHDService.findByCheckOutId(checkoutRequestId).getLocationId());
+                    fbiNotification.put("customerName", orderHDService.findByCheckOutId(checkoutRequestId).getCustomerName());
+                    fbiNotification.put("productName", orderHDService.findByCheckOutId(checkoutRequestId).getCheckOutRequestId());
+                    
+                    fbi.sendNotification(fbiNotification);
+                }                                
                 
-                AfricasTalkingIntegration africasTalking = new AfricasTalkingIntegration();
-                
-                africasTalking.sendSms(phoneNumber, 
-                		"Dear Customer, we have received your payment for your gas order no. "+orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo()+". We are currently processing it. ");
             } catch (Exception e) {
             	logger.error("Error on STKpush callback. Details: "+e.getMessage());
                 e.printStackTrace();
@@ -236,6 +248,15 @@ public class MpesaIntegration {
                 
                 africasTalking.sendSms(orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getPhoneNumber(), 
                 		"Dear Customer, we have received your payment for your gas order no. "+details.getAsString("ThirdPartyTransID").toString()+". We are currently processing it. ");
+                
+                JSONObject fbiNotification = new JSONObject();
+                fbiNotification.put("orderNo", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getOrderNo());
+                fbiNotification.put("location", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getLocationId());
+                fbiNotification.put("customerName", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getCustomerName());
+                fbiNotification.put("productName", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getCheckOutRequestId());
+                
+                fbi.sendNotification(fbiNotification);
+                
                 
                 LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
                 logger.info("Paybill payment received and processed. Booking a ride in progress");
