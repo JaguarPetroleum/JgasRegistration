@@ -3,6 +3,7 @@ package com.jaguarpetroleum.JgasRegistration.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,9 +32,9 @@ public class StaffDiscountController {
 		
 		try {
 			staffDiscount.setDiscountAmount(Double.parseDouble(offerDetails.get("discountAmount").toString()));
-			staffDiscountService.updateActive();
+			staffDiscountService.updateActive(offerDetails.get("locationId").toString());
 			staffDiscountService.save(staffDiscount);
-			logger.info("Staff offer created ");
+			logger.info("Staff offer created for location "+offerDetails.get("locationId").toString());
 			
 			response.put("resultCode", 0);
 			response.put("resultMessage", "Staff offer has been successfully applied");
@@ -46,10 +47,10 @@ public class StaffDiscountController {
 		return response;
 	}
 	
-	@GetMapping("/activeDiscount")
-	public StaffDiscount activeDiscount(){
+	@GetMapping("/activeDiscount/{locationId}")
+	public StaffDiscount activeDiscount(@Param("locationId") String locationId){
 		try {
-			return staffDiscountService.findActiveDiscount();
+			return staffDiscountService.findActiveDiscount(locationId);
 		} catch(Exception e) {
 			return null;
 		}

@@ -51,9 +51,9 @@ public class OrdersController {
 		return orderHDService.findByOrderNo(orderNo);
 	}
 	
-	@GetMapping("/getDiscount")
-	public StaffDiscount getDiscount() {
-		return staffDiscountService.findActiveDiscount();
+	@GetMapping("/getDiscount/{locationId}")
+	public StaffDiscount getDiscount(@PathVariable String locationId) {
+		return staffDiscountService.findActiveDiscount(locationId);
 	}
 	
 	@PostMapping("/order")

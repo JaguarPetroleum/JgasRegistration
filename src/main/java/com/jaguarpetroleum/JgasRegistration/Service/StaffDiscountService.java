@@ -18,11 +18,11 @@ public class StaffDiscountService {
 		staffDiscountRepository.save(staffDiscount);
 	}
 	
-	public StaffDiscount findActiveDiscount() {
-		return staffDiscountRepository.findActiveDiscount() ;
+	public StaffDiscount findActiveDiscount(String locationId) {
+		return staffDiscountRepository.findActiveDiscount(locationId) ;
 	}	
 	
-	public void updateActive() {
-		staffDiscountRepository.updateActive(); 
+	public void updateActive(String locationId) {
+		staffDiscountRepository.updateActive(locationId); 
 	}	
 }

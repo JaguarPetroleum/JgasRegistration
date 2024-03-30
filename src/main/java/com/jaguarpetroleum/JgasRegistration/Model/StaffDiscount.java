@@ -13,6 +13,13 @@ public class StaffDiscount {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer recordNo;
 	Double discountAmount;
+	String locationId;
+	public String getLocationId() {
+		return locationId;
+	}
+	public void setLocationId(String locationId) {
+		this.locationId = locationId;
+	}
 	public Integer getRecordNo() {
 		return recordNo;
 	}
@@ -28,14 +35,16 @@ public class StaffDiscount {
 	public StaffDiscount() {
 		
 	}
-	public StaffDiscount(Integer recordNo, Double discountAmount) {
+	public StaffDiscount(Integer recordNo, Double discountAmount, String locationId) {
 		super();
 		this.recordNo = recordNo;
 		this.discountAmount = discountAmount;
+		this.locationId = locationId;
 	}
 	@Override
 	public String toString() {
-		return "StaffDiscount [recordNo=" + recordNo + ", discountAmount=" + discountAmount + "]";
+		return "StaffDiscount [recordNo=" + recordNo + ", discountAmount=" + discountAmount + ", locationId="
+				+ locationId + "]";
 	}	
 
 }

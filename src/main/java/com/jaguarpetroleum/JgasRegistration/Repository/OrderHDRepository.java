@@ -67,4 +67,13 @@ public interface OrderHDRepository  extends JpaRepository<OrderHD, Integer>{
 
 	@Query(value = "SELECT * FROM tb_OrderHD WHERE checkOutRequestId = :checkOutRequestId", nativeQuery = true)
 	public OrderHD findByCheckOutId(String checkOutRequestId);
+	
+	
+	public interface OrdersPerDay {
+		String getOrderDate();
+		Integer getOrdersCount();
+	}
+	
+	@Query(value = "select DATE_FORMAT(orderDatetime, %m-%d) as orderDate,count(*) as ordersCount from tb_OrderHD where date(orderDatetime) >='?1' group by orderDate;",nativeQuery = true)
+    List<OrdersPerDay> findOrdersCountPerDay(String dateFrom);
 }

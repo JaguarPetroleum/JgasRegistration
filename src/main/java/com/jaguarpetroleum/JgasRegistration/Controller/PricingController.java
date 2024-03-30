@@ -63,7 +63,7 @@ public class PricingController {
 			if(myRegistration.getIsStaff() != null && myRegistration.getIsStaff()==1) {
 				logger.info("User "+phoneNumber +" is tagged as a staff. Finding staff offer attached to Gas products");
 				//Get the discount amount
-				StaffDiscount staffDiscount = staffDiscountService.findActiveDiscount();
+				StaffDiscount staffDiscount = staffDiscountService.findActiveDiscount(locationName);
 				Double staffOffer = 0.00;
 				if(staffDiscount != null) {
 					staffOffer = staffDiscount.getDiscountAmount();

@@ -14,4 +14,6 @@ public interface LittleCabTariffRepository extends JpaRepository<LittleCabTariff
 	
 	@Query(value = "SELECT * FROM tb_LittleCabTariff WHERE :distance BETWEEN floor AND ceiling", nativeQuery = true)
 	public JSONObject findByDistance(@Param("distance") String distance);
+	
+
 }
