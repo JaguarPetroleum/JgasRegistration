@@ -21,7 +21,7 @@ public interface OrderHDRepository  extends JpaRepository<OrderHD, Integer>{
 	@Query(value = "SELECT * FROM tb_OrderHD WHERE locationId = :locationId", nativeQuery = true)
 	public List<OrderHD> findByLocationId(@Param("locationId") String locationId);
 	
-	@Query(value = "SELECT t1.*, t2.firstName+' '+t2.lastName as customerName, t2.phoneNumber as customerNumber FROM JG.tb_OrderHD t1 inner join tb_Registration t2 on t1.phoneNumber = t2.phoneNumber WHERE locationId = :locationId", nativeQuery = true)
+	@Query(value = "SELECT t1.*, t2.firstName+' '+t2.lastName as customerName, t2.phoneNumber as customerNumber FROM tb_OrderHD t1 inner join tb_Registration t2 on t1.phoneNumber = t2.phoneNumber WHERE locationId = :locationId", nativeQuery = true)
 	public List<OrderHD> findByLocationId2(@Param("locationId") String locationId);
 	
 	@Query(value = "SELECT * FROM tb_OrderHD WHERE phoneNumber = :phoneNumber", nativeQuery = true)
