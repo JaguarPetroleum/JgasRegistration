@@ -27,11 +27,14 @@ public class RideService {
 		rideRepository.save(ride);
 	}
 	
-	public void updateCode(String startCode, String endCode, String tripId) {
-		rideRepository.updateCodes(startCode, endCode, tripId);		
+	public void updateCode(String startCode, String endCode, String tripId, String parking) {
+		rideRepository.updateCodes(startCode, endCode, tripId, parking);		
 	}
 	
 	public void updateStatus(String status, String tripId) {
 		rideRepository.updateStatus(status, tripId);		
+	}
+	public void updateDeliveryCodeStatus(String tripId) {
+		rideRepository.updateDeliveryCodeStatus( tripId);		
 	}
 }

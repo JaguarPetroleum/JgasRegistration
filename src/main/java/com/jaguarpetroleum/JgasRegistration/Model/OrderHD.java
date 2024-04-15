@@ -41,6 +41,13 @@ public class OrderHD {
 	String customerName;
 	String customerNumber;
 	String deliveryCode;
+	String customerLocationName;
+	public String getCustomerLocationName() {
+		return customerLocationName;
+	}
+	public void setCustomerLocationName(String customerLocationName) {
+		this.customerLocationName = customerLocationName;
+	}
 	public String getDeliveryCode() {
 		return deliveryCode;
 	}
@@ -208,7 +215,7 @@ public class OrderHD {
 			String specificLocation, String status, String transactionRef, Integer delivery, double deliveryCost,
 			Double destinationLatitude, Double destinationLongitude, Double distance, Double pickUpLatitude,
 			Double pickUpLongitude, Integer paid, String checkOutRequestId, String mpesaDescription,
-			String recepientName, String recepientPhone, String customerName, String customerNumber) {
+			String recepientName, String recepientPhone, String customerName, String customerNumber, String customerLocationName) {
 		super();
 		this.recordNo = recordNo;
 		this.returnCylinder = returnCylinder;
@@ -236,13 +243,14 @@ public class OrderHD {
 		this.recepientPhone = recepientPhone;
 		this.customerName = customerName;
 		this.customerNumber = customerNumber;
+		this.customerLocationName = customerLocationName;
 	}
 	public OrderHD(Integer recordNo, String returnCylinder, Double totalCost, Double totalProductCost,
 			String phoneNumber, String locationId, LocalDateTime orderDatetime, String orderNo, String paymentMethod,
 			String specificLocation, String status, String transactionRef, Integer delivery, double deliveryCost,
 			Double destinationLatitude, Double destinationLongitude, Double distance, Double pickUpLatitude,
 			Double pickUpLongitude, Integer paid, String checkOutRequestId, String mpesaDescription,
-			String recepientName, String recepientPhone) {
+			String recepientName, String recepientPhone, String customerLocationName) {
 		super();
 		this.recordNo = recordNo;
 		this.returnCylinder = returnCylinder;
@@ -268,6 +276,7 @@ public class OrderHD {
 		this.mpesaDescription = mpesaDescription;
 		this.recepientName = recepientName;
 		this.recepientPhone = recepientPhone;
+		this.customerLocationName = customerLocationName;
 	}
 	public OrderHD() {
 		
@@ -283,7 +292,8 @@ public class OrderHD {
 				+ ", distance=" + distance + ", pickUpLatitude=" + pickUpLatitude + ", pickUpLongitude="
 				+ pickUpLongitude + ", paid=" + paid + ", checkOutRequestId=" + checkOutRequestId
 				+ ", mpesaDescription=" + mpesaDescription + ", recepientName=" + recepientName + ", recepientPhone="
-				+ recepientPhone + "]";
+				+ recepientPhone + ", customerName=" + customerName + ", customerNumber=" + customerNumber
+				+ ", deliveryCode=" + deliveryCode + ", customerLocationName=" + customerLocationName + "]";
 	}
 		
 }

@@ -82,6 +82,9 @@ public class OrdersController {
 			orderHD.setPickUpLongitude(Double.parseDouble(orderDetails.get("pickUpLongitude").toString()));
 			orderHD.setPaid(0);
 			orderHD.setStatus("Order Placed");
+			if(orderDetails.containsKey("customerLocationName")) {
+				orderHD.setCustomerLocationName(orderDetails.get("customerLocationName").toString());
+			}			
 			
 			Registration regist = new Registration();
 			regist = registrationService.findByPhoneNumber(orderDetails.getAsString("phoneNumber"));

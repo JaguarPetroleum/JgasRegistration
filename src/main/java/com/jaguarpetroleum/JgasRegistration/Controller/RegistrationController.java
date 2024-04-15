@@ -1,5 +1,8 @@
 package com.jaguarpetroleum.JgasRegistration.Controller;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -65,6 +68,9 @@ public class RegistrationController {
 	public JSONObject add(@RequestBody JSONObject registrationDetails) {
 		JSONObject response = new JSONObject();
 		logger.info("Received request to register a user "+registrationDetails);
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+    	long recordNo = timestamp.getTime();
+		
 		
 		//if(whitelistService.findByPhoneNumber(registrationDetails.get("contactDefault").toString()) != null) {
 			if(registrationService.findByPhoneNumber(registrationDetails.get("contactDefault").toString())==null) {
@@ -78,6 +84,9 @@ public class RegistrationController {
 					registration.setPhoneNumber(registrationDetails.get("contactDefault").toString());
 					registration.setIdNumber(registrationDetails.get("nationalRegistration").toString());
 					registration.setHomeAddress(registrationDetails.get("homeAddress").toString());
+					registration.setRecordDatetime(LocalDateTime.now());
+					registration.setRecordNo(recordNo);
+					registration.setIsStaff(0);
 					
 					TrippleDes td = new TrippleDes();
 					
@@ -89,6 +98,7 @@ public class RegistrationController {
 					registrationService.save(registration);
 					logger.info("New user has been successfully registered. Details "+registration);
 					userService.save(myUser);
+					
 					logger.info("New user has been created "+myUser);
 					
 					response.put("resultCode", 0);

@@ -2,7 +2,8 @@ package com.jaguarpetroleum.JgasRegistration.Configs;
 
 public class Constants { 	 
  
-    //PRODUCTION
+/*
+ *      //PRODUCTION
 	//MPESA
     public static final String MPESACONSUMERKEY = "3QZs2CkhoGGZv7GkIqnUarj7KoUXIZOw"; 
     public static final String MPESACONSUMERSECRET = "dnAYNwSPGNbVohjy"; 
@@ -23,13 +24,10 @@ public class Constants {
     public static final String LITTLESECRET = "QRxkbK1yGUSYa6vW1/oh9A==";
     public static final String LITTLETYPE = "PARCELS";
     public static final String LITTLECORPORATEID = "65c0d192e22e5";
-    public static final String LITTLEDRIVER = "";
+    public static final String LITTLEDRIVER = ""; 
+ */
  
- 
- 
- 
-/*
- *   //STAGING
+      //STAGING
       //public static final String MPESACONSUMERKEY  = "KMJ1pMnEWW485mbS9pm4FJZprtR1gCOeuZRgiHpfsbZuGM0d";
       //public static final String MPESACONSUMERSECRET = "cLhhZZBsVw3GXuwHgi2IeaWzspDomgtDVy6AcagKAMK5nFiZjpvUOCUuxYetjCup";
       //public static final String MPESASHORTCODE = "174379";
@@ -55,8 +53,7 @@ public class Constants {
       public static final String LITTLEKEY = "0a6ccfdb4145be76";
       public static final String LITTLESECRET = "QRxkbK1yGUSYa6vW1/oh9A==";
       public static final String LITTLETYPE = "TESTING";
-      public static final String LITTLECORPORATEID = "61712edc94311";
-      public static final String LITTLEDRIVER = "phillip.otieno@little.bz";         	 
- */
+      public static final String LITTLECORPORATEID = "63088819366c8";
+      public static final String LITTLEDRIVER = "phillip.otieno@little.bz";         	  
 
 }

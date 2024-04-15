@@ -10,17 +10,22 @@ import com.jaguarpetroleum.JgasRegistration.Model.Ride;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Integer> {
-	@Query(value = "SELECT * FROM tb_Ride WHERE orderNo = :orderNo AND STATUS = 'RIDER ASSIGNED'", nativeQuery = true)
+	@Query(value = "SELECT * FROM tb_Ride WHERE orderNo = :orderNo AND STATUS IN ('RIDER ASSIGNED', 'ARRIVED', 'ACCEPTED', 'STARTED', 'ENDED', 'RATED')", nativeQuery = true)
 	public Ride findByOrderNo(@Param("orderNo") String orderNo);
 	
 	@Query(value = "SELECT * FROM tb_Ride WHERE tripId = :tripId AND status != 'CANCELLED'", nativeQuery = true)
 	public Ride findByTripId(@Param("tripId") String tripId);
 	
 	@Modifying 
-	@Query(value = "UPDATE tb_Ride SET startCode = :startCode, endCode = :endCode WHERE tripId = :tripId", nativeQuery = true)
-	public void updateCodes(@Param("startCode") String startCode, @Param("endCode") String endCode, @Param("tripId") String tripId);
+	@Query(value = "UPDATE tb_Ride SET startCode = :startCode, endCode = :endCode, parking = :parking WHERE tripId = :tripId", nativeQuery = true)
+	public void updateCodes(@Param("startCode") String startCode, @Param("endCode") String endCode, @Param("tripId") String tripId, @Param("parking") String parking);
 	
 	@Modifying 
 	@Query(value = "UPDATE tb_Ride SET status = :status WHERE tripId = :tripId", nativeQuery = true)
 	public void updateStatus(@Param("status") String status, @Param("tripId") String tripId);
+	
+	@Modifying 
+	@Query(value = "UPDATE tb_Ride SET deliveryCodeSent = 1 WHERE tripId = :tripId", nativeQuery = true)
+	public void updateDeliveryCodeStatus(@Param("tripId") String tripId);
+
 }

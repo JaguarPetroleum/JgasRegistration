@@ -119,17 +119,28 @@ public class LittleCabIntegration {
 	
 	@PostMapping("/littleCabBookRide")
 	public JSONObject bookRide(@RequestBody JSONObject details) throws RestClientException, ParseException, URISyntaxException {
+		//Added code bloc to prevent multiple ride assignment
+
+  		if(rideService.findByOrderNo(details.get("orderNo").toString()) != null) {
+			logger.info("Order "+ details.get("orderNo").toString() +" already has an active rider assigned");
+			return null;
+		}	
+		
 		String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
 		JSONObject response = new JSONObject();
 		
-		String shopContact = locationService.findByLocationId("KNTC").getPhoneNumber();
+		//added parameter locationId on the request JSONObject
+		//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
+		String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
 		
 		String requestJson = "{\r\n" + 
 				"    \"type\": \"CORPORATE\",\r\n" + 
 				"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
 				"    \"rider\": {\r\n" + 
-				"        \"mobileNumber\": \"254"+details.get("ferriedPassengerNumber").toString().substring(1)+"\",\r\n" + 
-				"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
+				//"        \"mobileNumber\": \"254"+details.get("ferriedPassengerNumber").toString().substring(1)+"\",\r\n" +       //details.get("ferriedPassengerNumber").toString().substring(1)  -- change made to have shop contact visible in all instances when rider picks
+				//"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
+				"        \"mobileNumber\": \"254726839423\",\r\n" +       
+				"        \"name\": \"test\",\r\n" + 
 				"        \"email\": \"test@test.com\",\r\n" + 
 				"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
 				"    },\r\n" + 
@@ -142,7 +153,7 @@ public class LittleCabIntegration {
 				"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
 				"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
 				"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
+				"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + //details.get("recipientMobile").toString().substring(1)     --- change made to have both contacts to read the shop details
 				"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
 				"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
 				"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
@@ -172,7 +183,7 @@ public class LittleCabIntegration {
 				"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
 				"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
 				"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"notes\": \"Delivery for "+details.get("ferriedPassengerName").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+". DELIVERY CODE: "+details.get("orderNo").toString()+"\"\r\n" + 
+				"            \"notes\": \"Delivery for "+details.get("ferriedPassengerName").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
 				"        },\r\n" + 
 				"        {\r\n" + 
 				"            \"order\": 3,\r\n" + 
@@ -316,6 +327,7 @@ public class LittleCabIntegration {
 		request.put("dropOffAddress", customerOrder.getSpecificLocation());
 		request.put("notes", "Delivery");
 		request.put("orderNo", customerOrder.getOrderNo());
+		request.put("locationId", customerOrder.getLocationId());
 		
 		return bookRide(request);
 	}
@@ -417,6 +429,7 @@ public class LittleCabIntegration {
             ride.setOrderNo(bookRideResponse.getAsString("orderNo"));
             ride.setTripId(tripId);
             ride.setStatus("RIDER ASSIGNED");
+            ride.setDeliveryCodeSent(0);
             
             rideService.save(ride);
 
@@ -442,6 +455,7 @@ public class LittleCabIntegration {
             org.json.JSONObject codes = payloadObject.getJSONObject("metrics").getJSONObject("otp");
             String startCode = codes.getString("startTrip");
             String endCode = codes.getString("endTrip");
+            String parking = codes.getString("parking");
             
             org.json.JSONObject deliveryDone = payloadObject.getJSONArray("extraDropOffDetails").getJSONObject(1);
             boolean isEnded = deliveryDone.getBoolean("isEnded");
@@ -460,6 +474,7 @@ public class LittleCabIntegration {
             response.put("destinationLatlong", destinationLatlong);
             response.put("startCode", startCode);
             response.put("endCode", (isEnded == true) ? endCode : "");
+            response.put("parking", parking);
             response.put("deliveryMade", isEnded);
             response.put("resultCode", 0);
             response.put("resultMessage", "Success in finding ride status");
@@ -468,17 +483,32 @@ public class LittleCabIntegration {
             response.put("plate", rideService.findByTripId(tripId).getPlate());            
             
             //Only present the end code to the vndor if the delivery has been made to the customer
-            if(isEnded == true) {
-            	rideService.updateCode(startCode, endCode, tripId);
+           /*
+            *  if(isEnded == true) {
+            	rideService.updateCode(startCode, endCode, tripId, parking);
             } else {
-            	rideService.updateCode(startCode, "", tripId);
-            }            
+            	rideService.updateCode(startCode, "", tripId, parking);
+            }    
+            */
+            
+            rideService.updateCode(startCode, endCode, tripId, parking);            
+            rideService.updateStatus(tripStatus, tripId);
             
             //Code block below udates the order status based on the littleCab status
             String myStatus = null;
             switch (tripStatus) {
             case "STARTED":
             	myStatus = "Rider Enroute";
+            	//check if delivery code has been sent. if not send the parking code
+            	
+            	if(rideService.findByTripId(tripId).getDeliveryCodeSent() == 0) {
+            		AfricasTalkingIntegration africasTalking = new AfricasTalkingIntegration();
+            		
+                	africasTalking.sendSms(orderHDService.findByOrderNo(rideService.findByTripId(tripId).getOrderNo()).getCustomerNumber(), 
+                    		"Dear Customer, your order has been dispatched. "+parking+" is your delivery code. Please share this code with the delivery agent to complete the delivery process. J-Gas");                    
+            	
+                	rideService.updateDeliveryCodeStatus(tripId);
+            	}   
             	break;
             case "ENDED":
             	myStatus = "Order Delivered";

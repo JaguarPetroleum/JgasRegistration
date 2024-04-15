@@ -22,8 +22,8 @@ public class RegistrationService {
 	}
 	
 	public void save(Registration registration) {
-		registrationRepository.save(registration);
-	}
+		registrationRepository.saveAndFlush(registration);
+	}	
 	
 	public List<Registration> allRegistrations() {
 		return registrationRepository.findAll();

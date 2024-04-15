@@ -1,6 +1,8 @@
 package com.jaguarpetroleum.JgasRegistration.Model;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,11 +15,11 @@ import jakarta.persistence.Table;
 @Table(name = "tb_Registration")
 public class Registration {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "recordNo")
-	Integer recordNo;
+	Long recordNo;
 	@Column(name = "recordDatetime", columnDefinition="DATETIME")
-	private Date recordDatetime;
+	private LocalDateTime recordDatetime;
 	@Column(name = "firstName")
 	String firstName;
 	@Column(name = "lastName")
@@ -49,9 +51,9 @@ public class Registration {
 	public Integer getIsStaff() {
 		return isStaff;
 	}
-	//public void setIsStaff(Integer isStaff) {
-	//	this.isStaff = isStaff;
-	//}
+	public void setIsStaff(Integer isStaff) {
+		this.isStaff = isStaff;
+	}
 	public String getStaffNumber() {
 		return staffNumber;
 	}
@@ -64,18 +66,18 @@ public class Registration {
 	public void setIdNumber(String idNumber) {
 		this.idNumber = idNumber;
 	}
-	public Integer getRecordNo() {
+	public Long getRecordNo() {
 		return recordNo;
 	}
-	public void setRecordNo(Integer recordNo) {
+	public void setRecordNo(Long recordNo) {
 		this.recordNo = recordNo;
 	}
-	public Date getRecordDatetime() {
+	public LocalDateTime getRecordDatetime() {
 		return recordDatetime;
 	}
-	//public void setRecordDatetime(Date recordDatetime) {
-	//	this.recordDatetime = recordDatetime;
-	//}
+	public void setRecordDatetime(LocalDateTime recordDatetime) {
+		this.recordDatetime = recordDatetime;
+	}
 	public String getFirstName() {
 		return firstName;
 	}
@@ -141,10 +143,12 @@ public class Registration {
 	}
  */
 	
-	public Registration( String firstName, String lastName, String phoneNumber,
-			String alternativePhone, String emailAddress, String latitude, String longitude, String idNumber) {
+	public Registration(Long recordNo, String firstName, String lastName, String phoneNumber,
+			String alternativePhone, String emailAddress, String latitude, String longitude, String idNumber, LocalDateTime recordDatetime, Integer isStaff) {
 		super();
+		this.recordNo = recordNo;
 		this.firstName = firstName;
+		this.recordDatetime = recordDatetime;
 		this.lastName = lastName;
 		this.phoneNumber = phoneNumber;
 		this.alternativePhone = alternativePhone;
@@ -152,12 +156,14 @@ public class Registration {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.idNumber = idNumber;
+		this.isStaff = isStaff;
 	}
 	
-	public Registration(String firstName, String lastName, String phoneNumber, String alternativePhone,
+	public Registration(Long recordNo, String firstName, String lastName, String phoneNumber, String alternativePhone,
 			String emailAddress, String latitude, String longitude, String idNumber, Integer isStaff,
-			String staffNumber, String homeAddress) {
+			String staffNumber, String homeAddress, LocalDateTime recordDatetime) {
 		super();
+		this.recordNo = recordNo;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.phoneNumber = phoneNumber;
@@ -169,18 +175,23 @@ public class Registration {
 		this.isStaff = isStaff;
 		this.staffNumber = staffNumber;
 		this.homeAddress = homeAddress;
+		this.recordDatetime = recordDatetime;
 	}
-	public Registration( String firstName, String lastName, String phoneNumber, String latitude, String longitude) {
+	public Registration(Long recordNo,  String firstName, String lastName, String phoneNumber, String latitude, String longitude, LocalDateTime recordDatetime, Integer isStaff) {
 		super();
+		this.recordNo = recordNo;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.phoneNumber = phoneNumber;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.recordDatetime = recordDatetime;
+		this.isStaff = isStaff;
 	}
 	
-	public Registration(String firstName, String lastName, String phoneNumber, String alternativePhone,
-			String emailAddress, String latitude, String longitude) {
+	public Registration(Long recordNo, String firstName, String lastName, String phoneNumber, String alternativePhone,
+			String emailAddress, String latitude, String longitude, LocalDateTime recordDatetime, Integer isStaff) {
+		this.recordNo = recordNo;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.phoneNumber = phoneNumber;
@@ -188,6 +199,8 @@ public class Registration {
 		this.emailAddress = emailAddress;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.recordDatetime = recordDatetime;
+		this.isStaff = isStaff;
 	}
 	@Override
 	public String toString() {

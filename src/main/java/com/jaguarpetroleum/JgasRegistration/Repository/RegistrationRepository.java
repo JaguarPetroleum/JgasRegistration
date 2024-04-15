@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.jaguarpetroleum.JgasRegistration.Model.Registration;
 
 @Repository
-public interface RegistrationRepository extends JpaRepository<Registration, Integer> {
+public interface RegistrationRepository extends JpaRepository<Registration, Long> {
 	@Query(value = "SELECT * FROM tb_Registration WHERE phoneNumber = :phoneNumber", nativeQuery = true)
 	public Registration findByPhoneNumber(@Param("phoneNumber") String phoneNumber);
 	
