@@ -21,6 +21,7 @@ import com.jaguarpetroleum.JgasRegistration.Model.StaffDiscount;
 import com.jaguarpetroleum.JgasRegistration.Service.LittleCabTariffService;
 import com.jaguarpetroleum.JgasRegistration.Service.LocationPricingService;
 import com.jaguarpetroleum.JgasRegistration.Service.LocationService;
+import com.jaguarpetroleum.JgasRegistration.Service.OrderHDService;
 import com.jaguarpetroleum.JgasRegistration.Service.ProductService;
 import com.jaguarpetroleum.JgasRegistration.Service.RegistrationService;
 import com.jaguarpetroleum.JgasRegistration.Service.StaffDiscountService;
@@ -45,6 +46,8 @@ public class PricingController {
 	private RegistrationService registrationService;
 	@Autowired
 	private StaffDiscountService staffDiscountService;
+	@Autowired
+	OrderHDService orderHDService;
 	
 	@GetMapping("/getByLocationPricing/{locationName}/{phoneNumber}")
 	public JSONArray get(@PathVariable String locationName, @PathVariable String phoneNumber){
@@ -60,7 +63,7 @@ public class PricingController {
 			logger.info("Details to location "+locationName +" found");
 			List<LocationPricing> locationPrices;
 			
-			if(myRegistration.getIsStaff() != null && myRegistration.getIsStaff()==1) {
+			if(myRegistration.getIsStaff() != null && myRegistration.getIsStaff()==1 && orderHDService.staffDiscountTimes(phoneNumber)<2) {
 				logger.info("User "+phoneNumber +" is tagged as a staff. Finding staff offer attached to Gas products");
 				//Get the discount amount
 				StaffDiscount staffDiscount = staffDiscountService.findActiveDiscount(locationName);

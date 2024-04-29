@@ -58,7 +58,7 @@ public class LittleCabIntegration {
 	@Autowired
 	LocationService locationService;
 	@Autowired
-	RideService rideService;
+	RideService rideService;	
 	
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
@@ -137,10 +137,8 @@ public class LittleCabIntegration {
 				"    \"type\": \"CORPORATE\",\r\n" + 
 				"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
 				"    \"rider\": {\r\n" + 
-				//"        \"mobileNumber\": \"254"+details.get("ferriedPassengerNumber").toString().substring(1)+"\",\r\n" +       //details.get("ferriedPassengerNumber").toString().substring(1)  -- change made to have shop contact visible in all instances when rider picks
-				//"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
-				"        \"mobileNumber\": \"254726839423\",\r\n" +       
-				"        \"name\": \"test\",\r\n" + 
+				"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
+				"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
 				"        \"email\": \"test@test.com\",\r\n" + 
 				"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
 				"    },\r\n" + 
@@ -153,7 +151,7 @@ public class LittleCabIntegration {
 				"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
 				"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
 				"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + //details.get("recipientMobile").toString().substring(1)     --- change made to have both contacts to read the shop details
+				"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
 				"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
 				"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
 				"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
@@ -166,7 +164,7 @@ public class LittleCabIntegration {
 				"    },\r\n" + 
 				"    \"dropOff\": {\r\n" + 
 				"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
-				"        \"address\": \""+details.get("dropOffAddress").toString()+"\"\r\n" + 
+				"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
 				"    },\r\n" + 
 				"    \"dropOffs\": [\r\n" + 
 				"        {\r\n" + 
@@ -175,15 +173,15 @@ public class LittleCabIntegration {
 				"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
 				"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
 				"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-				"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("ferriedPassengerName").toString()+" from KNTC-Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("dropOffAddress").toString()+" \"\r\n" + 
+				"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
 				"        },\r\n" +
 				"        {\r\n" + 
 				"            \"order\": 2,\r\n" + 
-				"            \"address\": \""+details.get("dropOffAddress").toString()+"\",\r\n" + 
+				"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
 				"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
 				"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
 				"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"notes\": \"Delivery for "+details.get("ferriedPassengerName").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
+				"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
 				"        },\r\n" + 
 				"        {\r\n" + 
 				"            \"order\": 3,\r\n" + 
@@ -191,7 +189,7 @@ public class LittleCabIntegration {
 				"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
 				"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
 				"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-				"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to KNTC-Jaguar Petroleum\"\r\n" + 
+				"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
 				"        }\r\n" + 
 				"    ],\r\n" + 
 				"    \"corporate\": {\r\n" + 
@@ -312,20 +310,20 @@ public class LittleCabIntegration {
 		location = locationService.findByLocationId(customerOrder.getLocationId());
 		
 		request.put("ferriedPassengerNumber", location.getPhoneNumber());
-		request.put("ferriedPassengerName", customerOrder.getLocationId());
-		request.put("itemCarried", "Delivery");
+		request.put("ferriedPassengerName", location.getLocationDescrition());
+		request.put("itemCarried", "LPG Gas");
 		request.put("itemSize", "1");
 		request.put("recipientName", customerOrder.getRecepientName());
 		request.put("recipientMobile", customerOrder.getRecepientPhone());
-		request.put("recipientAddress", customerOrder.getSpecificLocation());
+		request.put("recipientAddress", customerOrder.getCustomerLocationName());
 		request.put("contactPerson", customerRegDetails.getFirstName()+" "+customerRegDetails.getLastName());
 		request.put("deliveryNotes", "Delivery Order Number "+ customerOrder.getOrderNo());
 		request.put("typeOfAddress", "Home");
 		request.put("pickUpLatLng", customerOrder.getPickUpLatitude()+","+customerOrder.getPickUpLongitude());
-		request.put("pickUpAddress", customerOrder.getLocationId());
+		request.put("pickUpAddress", location.getLocationDescrition());
 		request.put("dropOffLatLng", customerOrder.getDestinationLatitude()+","+customerOrder.getDestinationLongitude());
 		request.put("dropOffAddress", customerOrder.getSpecificLocation());
-		request.put("notes", "Delivery");
+		request.put("notes", "LPG Delivery");
 		request.put("orderNo", customerOrder.getOrderNo());
 		request.put("locationId", customerOrder.getLocationId());
 		

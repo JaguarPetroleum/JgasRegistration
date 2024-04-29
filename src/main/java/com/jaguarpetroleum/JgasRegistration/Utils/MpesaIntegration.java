@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestClientException;
 import com.jaguarpetroleum.JgasRegistration.Service.OrderHDService;
 
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 import net.minidev.json.parser.JSONParser;
 
 import org.apache.http.impl.client.HttpClients;
@@ -32,6 +34,8 @@ public class MpesaIntegration {
 	private static final Logger logger = LoggerFactory.getLogger(MpesaIntegration.class);
 	@Autowired
 	OrderHDService orderHDService;
+	@Autowired
+	LittleCabIntegration littleCabIntegration;
 	
 	FirebaseIntegration fbi = new FirebaseIntegration();
 	
@@ -44,7 +48,7 @@ public class MpesaIntegration {
         String consumerSecret = com.jaguarpetroleum.JgasRegistration.Configs.Constants.MPESACONSUMERSECRET; 
         String shortcode = com.jaguarpetroleum.JgasRegistration.Configs.Constants.MPESASHORTCODE;
         String passkey = com.jaguarpetroleum.JgasRegistration.Configs.Constants.MPESAPASSKEY; 
-
+        String requestBody = null;
         
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
@@ -52,11 +56,13 @@ public class MpesaIntegration {
 
             String auth = consumerKey + ":" + consumerSecret;
             String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes());
+            logger.info("Sending token request");
             request.addHeader("Authorization", "Bearer " + auth().get("access_token").toString());
+            logger.info("Token received");
             request.addHeader("Content-Type", "application/json");
 
             String ts = getTimestamp() ;
-            String requestBody = "{ \"BusinessShortCode\": \"" + shortcode + "\", " +
+            requestBody = "{ \"BusinessShortCode\": \"" + shortcode + "\", " +
                                     "\"Password\": \"" + getPassword(shortcode, passkey) + "\", " +
                                     "\"Timestamp\": \"" + getTimestamp() + "\", " +
                                     "\"TransactionType\": \"CustomerPayBillOnline\", " +
@@ -78,7 +84,7 @@ public class MpesaIntegration {
             if (entity != null) {
             	JSONParser parser = new JSONParser(); 
             	res = (JSONObject) parser.parse(EntityUtils.toString(entity));
-                logger.info("stkpush response "+res);
+                logger.info("STKPush response "+res);
                 
                 if(res.containsKey("ResponseCode") && res.get("ResponseCode").toString().equals("0")) {
                 	logger.info("Updating order "+details.get("accountReference").toString() +" with STKpush reference");                	
@@ -87,7 +93,7 @@ public class MpesaIntegration {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Error sending STKPush request. Details: "+ex.getMessage()+" on request body "+requestBody );
         }        
         return res;
 	}
@@ -133,10 +139,19 @@ public class MpesaIntegration {
                 orderHDService.updatePaymentDetails(checkoutRequestId, transactionRef, (resultCode == 0) ? 1 : 0, resultDesc, (resultCode == 0) ? "Order Successful" : "Payment Processing Failed");
                
                 if(resultCode == 0) {
+                	String orderNo;
+                	orderNo = orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo();
                 	AfricasTalkingIntegration africasTalking = new AfricasTalkingIntegration();
                 	africasTalking.sendSms(phoneNumber, 
-                    		"Dear Customer, we have received your payment for your gas order no. "+orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo()+". We are currently processing it. ");
+                    		"Dear Customer, we have received your payment for your gas order no. "+orderNo+". We are currently processing it. ");
                     
+                	//Added on 23rd Apr 2024, to ensure rider is sought after gas payment is received
+                	//LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
+                    logger.info("STKPush payment received and processed. Booking a ride in progress");
+                    
+                    littleCabIntegration.vendorBookRide(orderNo);
+                	//============================================================================
+                	
                     JSONObject fbiNotification = new JSONObject();
                     fbiNotification.put("orderNo", orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo());
                     fbiNotification.put("location", orderHDService.findByCheckOutId(checkoutRequestId).getLocationId());
@@ -145,17 +160,16 @@ public class MpesaIntegration {
                     
                     fbi.sendNotification(fbiNotification);
                 }                                
-                
+                 
             } catch (Exception e) {
             	logger.error("Error on STKpush callback. Details: "+e.getMessage());
                 e.printStackTrace();
             }
         }        
         
-        public static org.json.JSONObject auth() throws ParseException, net.minidev.json.parser.ParseException {
-                // Define the endpoint for generating access token
-        		org.json.JSONObject res = new org.json.JSONObject();
-
+        @GetMapping("/mpesaToken")
+        public static JSONObject auth() throws ParseException, net.minidev.json.parser.ParseException {        		
+        		// Define the endpoint for generating access token
                 String tokenEndpoint = com.jaguarpetroleum.JgasRegistration.Configs.Constants.MPESATOKENENDPOINT;
 
                 // Define your consumer key and consumer secret
@@ -179,20 +193,20 @@ public class MpesaIntegration {
                     HttpResponse response = httpClient.execute(httpGet);
 
                     // Print response
-                    logger.info("Response Code : " + response.getStatusLine().getStatusCode());
+                    logger.info("Token generation request httpStatus code : " + response.getStatusLine().getStatusCode());
                     HttpEntity entity = response.getEntity();
-                    String responseString = EntityUtils.toString(entity);
+                    String responseString = EntityUtils.toString(entity);                    
                     logger.info("Response : " + responseString);
+                    
+                    JSONObject jsonObject = (JSONObject) JSONValue.parse(responseString);
 
-                    org.json.JSONObject jsonObject = new org.json.JSONObject(responseString);
-                    return jsonObject ;
-                    // Extract access token from response
-                    // You may want to parse the JSON response to get the access token
-                    // For simplicity, we're printing the entire response here
+                    return jsonObject;
+                    
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Error encountered generating Mpesa access token. Details: "+ e.getMessage());         
+                    return null;           
                 }
-            return res;
+                
         }
         
         /*
@@ -258,7 +272,7 @@ public class MpesaIntegration {
                 fbi.sendNotification(fbiNotification);
                 
                 
-                LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
+                //LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
                 logger.info("Paybill payment received and processed. Booking a ride in progress");
                 
                 littleCabIntegration.vendorBookRide(details.getAsString("ThirdPartyTransID").toString());

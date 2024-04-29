@@ -62,7 +62,7 @@ public interface OrderHDRepository  extends JpaRepository<OrderHD, Integer>{
 			@Param("resultDesc") String resultDesc, @Param("status") String status);
 	
 	@Modifying 
-	@Query(value = "UPDATE JG.tb_OrderHD SET status = 'System Cancelled' WHERE status = 'Order Placed' AND TIMEDIFF(TIME(orderDatetime), TIME(now())) > '01:00:00'", nativeQuery = true)
+	@Query(value = "UPDATE tb_OrderHD SET status = 'System Cancelled' WHERE status = 'Order Placed' AND TIMEDIFF(TIME(orderDatetime), TIME(now())) > '01:00:00'", nativeQuery = true)
 	public void cancelUnpaidOrders();
 
 	@Query(value = "SELECT * FROM tb_OrderHD WHERE checkOutRequestId = :checkOutRequestId", nativeQuery = true)
@@ -76,4 +76,7 @@ public interface OrderHDRepository  extends JpaRepository<OrderHD, Integer>{
 	
 	@Query(value = "select DATE_FORMAT(orderDatetime, %m-%d) as orderDate,count(*) as ordersCount from tb_OrderHD where date(orderDatetime) >='?1' group by orderDate;",nativeQuery = true)
     List<OrdersPerDay> findOrdersCountPerDay(String dateFrom);
+	
+	@Query(value = "SELECT COUNT(*) FROM tb_OrderHD WHERE customerNumber = :phoneNumber AND MONTH(recordDatetime) = MONTH(current_date()) AND YEAR(recordDatetime) = YEAR(current_date());", nativeQuery = true)
+	public Integer staffDiscountTimes(String phoneNumber);
 }

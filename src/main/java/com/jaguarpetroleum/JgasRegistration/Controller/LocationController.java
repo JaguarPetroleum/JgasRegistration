@@ -27,7 +27,7 @@ public class LocationController {
 	
 	@PostMapping("/createLocation")
 	public JSONObject add(@RequestBody JSONObject locationDetails) {
-		logger.info("Received location details "+locationDetails);
+		logger.info("Received location creation details "+locationDetails);
 		JSONObject response = new JSONObject();
 		
 		Location location = new Location();
@@ -42,13 +42,13 @@ public class LocationController {
 			location.setStatus(locationDetails.get("status").toString());
 			
 			locationService.save(location);
-			logger.info("New location created "+location);
+			logger.info("New location created. Location name "+locationDetails.get("locationName").toString());
 			
 			response.put("resultCode", 0);
-			response.put("resultMessage", "Location has been successfully created");
+			response.put("resultMessage", "Location "+locationDetails.get("locationName").toString()+" has been successfully created");
 		} catch (Exception e) {
 			response.put("resultCode", 10010);
-			response.put("resultMessage", "An error occured while creating location. "+e.getMessage());
+			response.put("resultMessage", "An error occured while creating location. Details: "+e.getMessage());
 		}
 		
 		logger.info("Location creation response "+response);		
@@ -73,10 +73,10 @@ public class LocationController {
 				location.setStatus(locationDetails.get("status").toString());
 				
 				locationService.save(location);
-				logger.info("Llocation updated "+location);
+				logger.info("Location "+locationDetails.get("locationName").toString()+" updated successfully");
 				
 				response.put("resultCode", 0);
-				response.put("resultMessage", "Location has been successfully updated");
+				response.put("resultMessage", "Location "+locationDetails.get("locationName").toString()+" has been successfully updated");
 			} else {
 				response.put("resultCode", 20010);
 				response.put("resultMessage", "There is no location identified by locationId "+locationDetails.get("locationId").toString());

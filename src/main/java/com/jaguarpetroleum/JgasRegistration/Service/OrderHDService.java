@@ -81,6 +81,14 @@ public class OrderHDService {
 		return orderHDRepository.findByCheckOutId(mpesaCheckOutId);
 	}
 	
+	public Integer staffDiscountTimes(String phoneNumber) {
+		if(orderHDRepository.staffDiscountTimes(phoneNumber)==null) {
+			return 0;
+		} else {
+			return orderHDRepository.staffDiscountTimes(phoneNumber);
+		}		
+	}
+	
 	@Scheduled(cron = "0 */5 * * * *")
 	public void cancelUnpaidOrders() {
 		 orderHDRepository.cancelUnpaidOrders();		

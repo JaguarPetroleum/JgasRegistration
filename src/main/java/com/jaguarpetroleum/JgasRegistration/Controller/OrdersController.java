@@ -178,7 +178,7 @@ public class OrdersController {
 	
 	@GetMapping("/orderItems2/{orderNo}")
 	public JSONArray getOrderItems(@PathVariable String orderNo){
-		logger.info("Received request for Order items in order "+ orderNo);
+		//logger.info("Received request for Order items in order "+ orderNo);
 		JSONArray jarray = new JSONArray();
 		
 		try {
@@ -218,12 +218,12 @@ public class OrdersController {
 	
 	@GetMapping("/orderItems/{orderNo}")
 	public List<OrderLN> getOrderItems2(@PathVariable String orderNo){
-		logger.info("Received request for Order items in order "+ orderNo);
+		//logger.info("Received request for Order items in order "+ orderNo);
 		
 		try {
 			return orderLNService.findByOrderNo(orderNo);
 		} catch(Exception e) {
-			logger.error("Error encountered while retrieving order items "+e.getMessage());
+			logger.error("Error encountered while retrieving order items in order number "+orderNo+". Details: " +e.getMessage());
 			return null;
 		}				
 	}
