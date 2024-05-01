@@ -1,10 +1,24 @@
 package com.jaguarpetroleum.JgasRegistration.Utils;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import net.minidev.json.JSONObject;
@@ -31,7 +45,7 @@ public class jmobilityIntegration {
 		
 		logger.info("Find the regional name payload "+payload);
 		
-		String url = "89.38.97.47:5001/v1/trip/tripinfo";		
+		String url = "http://89.38.97.47:5001/v1/trip/tripinfo";		
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -62,7 +76,7 @@ public class jmobilityIntegration {
 		
 		logger.info("Received request to make a J-Mobility booking  "+bookDetails);
 		
-		String url = "89.38.97.47:5001/v1/customer/request/";		
+		String url = "http://89.38.97.47:5001/v1/customer/request/";		
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -82,4 +96,73 @@ public class jmobilityIntegration {
 		
 		return response ;
 	}
+	
+	public JSONObject rideStatus(@PathVariable String tripId) throws RestClientException, ParseException {
+		JSONObject response = new JSONObject();	
+		if(tripId != null ) {
+			String statusEndpoint = "http://89.38.97.47:3001/user-sessions/booking/v1/trip/status?tripId="+tripId;
+			logger.info("Request to check ride status "+statusEndpoint);				
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);	
+			//headers.setBearerAuth(generateToken().get("token").toString());
+			HttpEntity <String> entity = new HttpEntity<String>(headers);
+		      
+			JSONParser parser = new JSONParser(); 
+			disableSslVerification();
+			try {
+				response = (JSONObject) parser.parse(restTemplate.exchange(statusEndpoint , HttpMethod.GET, entity, String.class).getBody());
+								 
+			} catch (ParseException e) {				
+				e.printStackTrace();
+			}
+		} else {
+			response.put("resultMessage", "The tripId is missing");
+			response.put("resultCode", 10010);
+		}	
+		
+		logger.info("Ride status response "+response);
+		//return parseRideStatus(response);
+		return response;
+	}
+	
+	private void disableSslVerification() {        
+        try {
+            // Create a trust manager that does not validate certificate chains
+            TrustManager[] trustAllCerts;
+            trustAllCerts = new TrustManager[]{new X509TrustManager() {
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+            };
+
+            // Install the all-trusting trust manager
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            //e.printStackTrace();
+            logger.error(e.toString());
+        }
+    }
 }
