@@ -6,6 +6,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -43,6 +44,7 @@ import com.jaguarpetroleum.JgasRegistration.Service.RegistrationService;
 import com.jaguarpetroleum.JgasRegistration.Service.RideService;
 
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 @RestController
@@ -59,6 +61,8 @@ public class LittleCabIntegration {
 	LocationService locationService;
 	@Autowired
 	RideService rideService;	
+	@Autowired
+	jmobilityIntegration jmobility;
 	
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
@@ -125,126 +129,347 @@ public class LittleCabIntegration {
 			logger.info("Order "+ details.get("orderNo").toString() +" already has an active rider assigned");
 			return null;
 		}	
-		
-		String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
-		JSONObject response = new JSONObject();
-		
-		//added parameter locationId on the request JSONObject
-		//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
-		String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
-		
-		String requestJson = "{\r\n" + 
-				"    \"type\": \"CORPORATE\",\r\n" + 
-				"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
-				"    \"rider\": {\r\n" + 
-				"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
-				"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
-				"        \"email\": \"test@test.com\",\r\n" + 
-				"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
-				"    },\r\n" + 
-				"    \"skipDrivers\": [\r\n" + 
-				"        \"person@mail.com\"\r\n" + 
-				"    ],\r\n" + 
-				"    \"vehicle\": {\r\n" + 
-				"        \"type\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLETYPE+"\",\r\n" + 																											
-				"        \"details\": {\r\n" + 
-				"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
-				"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
-				"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
-				"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
-				"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
-				"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
-				"            \"typeOfAddress\": \""+details.get("typeOfAddress").toString()+"\"\r\n" + 
-				"        }\r\n" + 
-				"    },\r\n" + 
-				"    \"pickUp\": {\r\n" + 
-				"        \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-				"        \"address\": \""+details.get("pickUpAddress").toString()+"\"\r\n" + 
-				"    },\r\n" + 
-				"    \"dropOff\": {\r\n" + 
-				"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
-				"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
-				"    },\r\n" + 
-				"    \"dropOffs\": [\r\n" + 
-				"        {\r\n" + 
-				"            \"order\": 1,\r\n" + 
-				"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
-				"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-				"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
-				"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-				"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
-				"        },\r\n" +
-				"        {\r\n" + 
-				"            \"order\": 2,\r\n" + 
-				"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
-				"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
-				"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
-				"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-				"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
-				"        },\r\n" + 
-				"        {\r\n" + 
-				"            \"order\": 3,\r\n" + 
-				"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
-				"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-				"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
-				"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-				"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
-				"        }\r\n" + 
-				"    ],\r\n" + 
-				"    \"corporate\": {\r\n" + 
-				"        \"corporateId\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLECORPORATEID+"\"\r\n" + 																											
-				"    }\r\n" + 
-				"}";					
-		
-		logger.info("Rider booking Payload: "+ requestJson);
-		
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);	
-		headers.setBearerAuth(generateToken().get("token").toString());				
-		
-		HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
-		
-		disableSslVerification();	    
-		URI uri = new URI(bookingEndpoint);  			
-		
-		JSONParser parser = new JSONParser();  
-		
-		try {
-			response = (JSONObject) parser.parse(restTemplate.exchange(uri 
-															, HttpMethod.POST, entity, String.class).getBody());
-							 
-		} catch (ParseException e) {				
-			logger.error(e.getLocalizedMessage());
-		} 			
-		
-		logger.info("LittleCab Booking Response Payload "+ response);			
-		
-		response.appendField("orderNo", details.get("orderNo").toString());
+  		
+  		
+  		try {
+  			//Call for a jmobility rider. Remove the try block to return to littlecab as sole mobility partner
+  			JSONObject resp = new JSONObject();
+  			
+  			JSONObject jmobResponse = new JSONObject();
+  			jmobResponse = jmobility.bookRide(details);  		
+  			
+  			if(jmobResponse.get("message").toString().toUpperCase().equals("SUCCESS")) {
+  				Map body = (Map) jmobResponse.get("data");
+  	  			JSONObject dataBody = new JSONObject(body);	
+  	  			Map rider = (Map) dataBody.get("rider");
+  	  			
+  	  			JSONObject driver = new JSONObject();
+  	  			JSONObject driverDetails = new JSONObject(rider);
+  	  			driver.put("name", driverDetails.get("name").toString());
+  	  			driver.put("mobile",driverDetails.get("phone").toString());
+  	  			driver.put("rating","");
+  	  			driver.put("email","");
+  				driver.put("picture","");
+  	  			
+  	  			JSONObject carDetails = new JSONObject();
+  	  			carDetails.put("color","");
+  	  			carDetails.put("distance","");
+  	  			carDetails.put("model",driverDetails.get("vehicle_make").toString()+" "+driverDetails.get("vehicle_model").toString());
+  	  			carDetails.put("plate",driverDetails.get("number_plate").toString());
+  	  			carDetails.put("time","");
+  	  			carDetails.put("latlng",driverDetails.get("latitude").toString()+","+ driverDetails.get("longitude").toString());
+  	  			
+  	  			
+  	  			Map trip = (Map) driverDetails.get("tripCodes");
+  	  			JSONObject tripCodes = new JSONObject(trip);	
+  	  			resp.put("distance", "0.00");
+  	  			resp.put("driver", driver);
+  	  			resp.put("car", carDetails);
+  	  			resp.put("tripId", tripCodes.get("tripId").toString());
+  	  			resp.put("endCode", tripCodes.get("endCode").toString());
+  				resp.put("startCode", tripCodes.get("startCode").toString());
+  	  			resp.put("time", "0.00");
+  	  			resp.appendField("orderNo", details.get("orderNo").toString());
+  	  			resp.appendField("provider", "J-Mobility");
+  	  			
+  	  			logger.info("Converted J-Mobility response payload to parse "+resp);
+  	  			
+  	  			return parseBookRide(resp);
+  	  			
+  			}  else {
+  				return null;
+  			}
+  			
+  	  		
+  		} catch(Exception ex) {
+  			
+  			String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
+  			JSONObject response = new JSONObject();
+  			
+  			//added parameter locationId on the request JSONObject
+  			//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
+  			String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
+  			
+  			String requestJson = "{\r\n" + 
+  					"    \"type\": \"CORPORATE\",\r\n" + 
+  					"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
+  					"    \"rider\": {\r\n" + 
+  					"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
+  					"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
+  					"        \"email\": \"test@test.com\",\r\n" + 
+  					"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
+  					"    },\r\n" + 
+  					"    \"skipDrivers\": [\r\n" + 
+  					"        \"person@mail.com\"\r\n" + 
+  					"    ],\r\n" + 
+  					"    \"vehicle\": {\r\n" + 
+  					"        \"type\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLETYPE+"\",\r\n" + 																											
+  					"        \"details\": {\r\n" + 
+  					"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
+  					"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
+  					"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+  					"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
+  					"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+  					"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
+  					"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
+  					"            \"typeOfAddress\": \""+details.get("typeOfAddress").toString()+"\"\r\n" + 
+  					"        }\r\n" + 
+  					"    },\r\n" + 
+  					"    \"pickUp\": {\r\n" + 
+  					"        \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  					"        \"address\": \""+details.get("pickUpAddress").toString()+"\"\r\n" + 
+  					"    },\r\n" + 
+  					"    \"dropOff\": {\r\n" + 
+  					"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+  					"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
+  					"    },\r\n" + 
+  					"    \"dropOffs\": [\r\n" + 
+  					"        {\r\n" + 
+  					"            \"order\": 1,\r\n" + 
+  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+  					"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
+  					"        },\r\n" +
+  					"        {\r\n" + 
+  					"            \"order\": 2,\r\n" + 
+  					"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+  					"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+  					"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
+  					"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+  					"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
+  					"        },\r\n" + 
+  					"        {\r\n" + 
+  					"            \"order\": 3,\r\n" + 
+  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+  					"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
+  					"        }\r\n" + 
+  					"    ],\r\n" + 
+  					"    \"corporate\": {\r\n" + 
+  					"        \"corporateId\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLECORPORATEID+"\"\r\n" + 																											
+  					"    }\r\n" + 
+  					"}";					
+  			
+  			logger.info("Rider booking Payload: "+ requestJson);
+  			
+  			HttpHeaders headers = new HttpHeaders();
+  			headers.setContentType(MediaType.APPLICATION_JSON);	
+  			headers.setBearerAuth(generateToken().get("token").toString());				
+  			
+  			HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
+  			
+  			disableSslVerification();	    
+  			URI uri = new URI(bookingEndpoint);  			
+  			
+  			JSONParser parser = new JSONParser();  
+  			
+  			try {
+  				response = (JSONObject) parser.parse(restTemplate.exchange(uri 
+  																, HttpMethod.POST, entity, String.class).getBody());
+  								 
+  			} catch (ParseException e) {				
+  				logger.error(e.getLocalizedMessage());
+  			} 			
+  			
+  			logger.info("LittleCab Booking Response Payload "+ response);			
+  			
+  			response.appendField("orderNo", details.get("orderNo").toString());
+  			response.appendField("provider", "LittleCab");
 
-		return parseBookRide(response);
+  			return parseBookRide(response);
+  		}		
+		
 	}
 	
 	@GetMapping("/rideStatus/{tripId}")
 	public JSONObject rideStatus(@PathVariable String tripId) throws RestClientException, ParseException {
 		JSONObject response = new JSONObject();	
 		if(tripId != null ) {
-			String statusEndpoint = "https://api.little.bz/service/ride/"+tripId+"/status";
-			logger.info("Request to check ride status "+statusEndpoint);				
 			
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);	
-			headers.setBearerAuth(generateToken().get("token").toString());
-			HttpEntity <String> entity = new HttpEntity<String>(headers);
-		      
-			JSONParser parser = new JSONParser(); 
-			disableSslVerification();
-			try {
-				response = (JSONObject) parser.parse(restTemplate.exchange(statusEndpoint , HttpMethod.GET, entity, String.class).getBody());
-								 
-			} catch (ParseException e) {				
-				e.printStackTrace();
+			if(rideService.findByTripId(tripId).getProvider().toString().equals("J-Mobility")) {
+				String statusEndpoint = "http://89.38.97.47:3001/user-sessions/booking/v1/trip/status?tripId="+tripId;
+				logger.info("Request to check ride status "+statusEndpoint);				
+				
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);	
+				//headers.setBearerAuth(generateToken().get("token").toString());
+				HttpEntity <String> entity = new HttpEntity<String>(headers);
+			      
+				JSONParser parser = new JSONParser(); 
+				disableSslVerification();
+				try {
+					JSONObject resp = (JSONObject) parser.parse(restTemplate.exchange(statusEndpoint , HttpMethod.GET, entity, String.class).getBody());
+					
+					Map trip = (Map) resp.get("trip");
+	  	  			JSONObject tripDetails = new JSONObject(trip);
+	  	  			
+	  	  			String stat = "";
+	  	  			
+	  	  		switch (trip.get("tripStatus").toString().toUpperCase()) {
+	            case "START":
+	            	stat = "STARTED";   
+	            	break;
+	            case "STARTED":
+	            	stat = "STARTED";   
+	            	break;
+	            case "ACCEPTED":
+	            	stat = "RIDER ASSIGNED";   
+	            	break;
+	            case "ONGOING":
+	            	stat = "STARTED";   
+	            	break;
+	            case "ENDED":
+	            	stat = "ENDED";
+	            	break;
+	            case "END":
+	            	stat = "ENDED";
+	            	break;
+	            case "CANCELLED":
+	            	stat = "CANCELLED";
+	            	break;
+	            case "DELIVERED":
+	            	stat = "DELIVERED";
+	            	break;
+	            	//default :
+	            	//stat = "STARTED";
+	            }
+					
+					String payload = "{\r\n" + 
+							"  \"country\": \"KENYA\",\r\n" + 
+							"  \"endedOn\": \"2024-04-12T19:07:38.503\",\r\n" + 
+							"  \"city\": \"NAIROBI\",\r\n" + 
+							"  \"dropOff\": {\r\n" + 
+							"    \"actual\": {\r\n" + 
+							"      \"address\": \"NAIROBI\",\r\n" + 
+							"      \"latlng\": \""+trip.get("dropOffLatitude").toString()+","+trip.get("dropOffLongitude").toString()+"\"\r\n" + 
+							"    },\r\n" + 
+							"    \"initial\": {\r\n" + 
+							"      \"address\": \"NAIROBI\",\r\n" + 
+							"      \"latlng\": \""+trip.get("pickupLatitude").toString()+","+trip.get("pickupLongitude").toString()+"\"\r\n" + 
+							"    }\r\n" + 
+							"  },\r\n" + 
+							"  \"extraDropOffDetails\": [\r\n" + 
+							"    {\r\n" + 
+							"      \"contactMobileNumber\": \"254792622345\",\r\n" + 
+							"      \"address\": \"NAIROBI\",\r\n" + 
+							"      \"notes\": \"Pick Delivery for customer NAIROBI from KNTC-Jaguar Petroleum. Order Number LLSQU7HQ. Destination 1st floor \",\r\n" + 
+							"      \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+							"      \"isEnded\": false,\r\n" + 
+							"      \"latlng\": \""+trip.get("pickupLatitude").toString()+","+trip.get("pickupLongitude").toString()+"\",\r\n" + 
+							"      \"order\": 1\r\n" + 
+							"    },\r\n" + 
+							"    {\r\n" + 
+							"      \"contactMobileNumber\": \"254711791877\",\r\n" + 
+							"      \"address\": \"1st floor\",\r\n" + 
+							"      \"notes\": \"Delivery for NAIROBI from Jaguar Petroleum for order number LLSQU7HQ\",\r\n" + 
+							"      \"contactName\": \"betty \",\r\n" + 
+							"      \"isEnded\": false,\r\n" + 
+							"      \"latlng\": \""+trip.get("dropOffLatitude").toString()+","+trip.get("dropOffLongitude").toString()+"\",\r\n" + 
+							"      \"order\": 2\r\n" + 
+							"    },\r\n" + 
+							"    {\r\n" + 
+							"      \"contactMobileNumber\": \"254792622345\",\r\n" + 
+							"      \"address\": \"NAIROBI\",\r\n" + 
+							"      \"notes\": \"Return cage for order number LLSQU7HQ to KNTC-Jaguar Petroleum\",\r\n" + 
+							"      \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+							"      \"isEnded\": false,\r\n" + 
+							"      \"latlng\": \""+trip.get("pickupLatitude").toString()+","+trip.get("pickupLongitude").toString()+"\",\r\n" + 
+							"      \"order\": 3\r\n" + 
+							"    }\r\n" + 
+							"  ],\r\n" + 
+							"  \"pickUp\": {\r\n" + 
+							"    \"actual\": {\r\n" + 
+							"      \"address\": \"Yallow Road\",\r\n" + 
+							"      \"latlng\": \"\"\r\n" + 
+							"    },\r\n" + 
+							"    \"initial\": {\r\n" + 
+							"      \"address\": \"NAIROBI\",\r\n" + 
+							"      \"latlng\": \""+trip.get("pickupLatitude").toString()+","+trip.get("pickupLongitude").toString()+"\"\r\n" + 
+							"    }\r\n" + 
+							"  },\r\n" + 
+							"  \"tripId\": \""+trip.get("tripId").toString()+"\",\r\n" + 
+							"  \"rider\": \""+trip.get("riderId").toString()+"\",\r\n" + 
+							"  \"corporateId\": \"65c0d192e22e5\",\r\n" + 
+							"  \"vehicle\": {\r\n" + 
+							"    \"meta\": {\r\n" + 
+							"      \"min\": 200,\r\n" + 
+							"      \"perKM\": 0,\r\n" + 
+							"      \"perMin\": 0,\r\n" + 
+							"      \"base\": 0\r\n" + 
+							"    },\r\n" + 
+							"    \"location\": {\r\n" + 
+							"      \"bearing\": \"238.915924072265625\",\r\n" + 
+							"      \"latlng\": \""+trip.get("riderLatitude").toString()+","+trip.get("riderLongitude").toString()+"\"\r\n" + 
+							"    },\r\n" + 
+							"    \"type\": \"PARCELS\"\r\n" + 
+							"  },\r\n" + 
+							"  \"driver\": \"kipomarichard12@gmail.com\",\r\n" + 
+							"  \"tripCost\": 770,\r\n" + 
+							"  \"currency\": \"KES\",\r\n" + 
+							"  \"payment\": {\r\n" + 
+							"    \"mode\": \"CORPORATE\",\r\n" + 
+							"    \"reference\": \"\",\r\n" + 
+							"    \"amount\": 770,\r\n" + 
+							"    \"currency\": \"KES\"\r\n" + 
+							"  },\r\n" + 
+							"  \"metrics\": {\r\n" + 
+							"    \"cost\": {\r\n" + 
+							"      \"total\": 770,\r\n" + 
+							"      \"liveFare\": 770\r\n" + 
+							"    },\r\n" + 
+							"    \"distance\": {\r\n" + 
+							"      \"total\": 28.27,\r\n" + 
+							"      \"cost\": 770\r\n" + 
+							"    },\r\n" + 
+							"    \"otp\": {\r\n" + 
+							"      \"parking\": \""+trip.get("deliveryCode").toString()+"\",\r\n" + 
+							"      \"startTrip\": \""+trip.get("startCode").toString()+"\",\r\n" + 
+							"      \"endTrip\": \""+trip.get("endCode").toString()+"\"\r\n" + 
+							"    },\r\n" + 
+							"    \"time\": {\r\n" + 
+							"      \"total\": 89,\r\n" + 
+							"      \"cost\": 0\r\n" + 
+							"    }\r\n" + 
+							"  },\r\n" + 
+							"  \"startedOn\": \"2024-04-12T17:37:43.703\",\r\n" + 
+							"  \"tripStatus\": \""+stat+"\",\r\n" + 
+							"  \"status\": {\r\n" + 
+							"    \"driverStatus\": \""+stat+"\",\r\n" + 
+							"    \"driverStatusId\": 7,\r\n" + 
+							"    \"tripStatus\": \""+stat+"\"\r\n" + 
+							"  }\r\n" + 
+							"}";
+					
+					response  = (JSONObject) JSONValue.parse(payload);
+									 
+				} catch (ParseException e) {				
+					logger.error("Error getting trip status. Details: "+e.getMessage());
+				}
+				
+			} else {
+				String statusEndpoint = "https://api.little.bz/service/ride/"+tripId+"/status";
+				logger.info("Request to check ride status "+statusEndpoint);				
+				
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);	
+				headers.setBearerAuth(generateToken().get("token").toString());
+				HttpEntity <String> entity = new HttpEntity<String>(headers);
+			      
+				JSONParser parser = new JSONParser(); 
+				disableSslVerification();
+				try {
+					response = (JSONObject) parser.parse(restTemplate.exchange(statusEndpoint , HttpMethod.GET, entity, String.class).getBody());
+									 
+				} catch (ParseException e) {				
+					logger.error("Error getting trip status. Details: "+e.getMessage());
+				}
 			}
+			
+			
 		} else {
 			response.put("resultMessage", "The tripId is missing");
 			response.put("resultCode", 10010);
@@ -258,34 +483,73 @@ public class LittleCabIntegration {
 	public JSONObject cancelRide(@PathVariable String tripId) throws RestClientException, ParseException, URISyntaxException {
 		JSONObject response = new JSONObject();
 		if(tripId != null) {
-			String cancelEndpoint = "https://api.little.bz/service/ride/"+tripId+"/cancel";
-			logger.info("Request to cancel ride  "+cancelEndpoint);		
 			
-			String requestJson = "{\r\n" + 
-					"    \"reason\": \"Wrong Request\"\r\n" + 
-					"}";		
-			
-			logger.info("Cancel Ride Payload: "+ requestJson);
-			
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);	
-			headers.setBearerAuth(generateToken().get("token").toString());				
-			
-			HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
-			
-			disableSslVerification();	    
-			URI uri = new URI(cancelEndpoint);  			
-			
-			JSONParser parser = new JSONParser();  
-			disableSslVerification();
-			
-			try {
-				response = (JSONObject) parser.parse(restTemplate.exchange(uri 
-																, HttpMethod.POST, entity, String.class).getBody());
-								 
-			} catch (ParseException e) {				
-				e.printStackTrace();
-			} 	
+			if(rideService.findByTripId(tripId).getProvider().toString().equals("J-Mobility")) {
+				String cancelEndpoint = "https://89.38.97.47:5001/v1/customer/cancelTrip";
+				logger.info("Request to cancel ride  "+cancelEndpoint);		
+				
+				String requestJson = "{\r\n" + 
+						"    \"tripId\": \""+tripId+"\"\r\n" + 
+						"}";		
+				
+				logger.info("Cancel Ride Payload: "+ requestJson);
+				
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);	
+				//headers.setBearerAuth(generateToken().get("token").toString());				
+				
+				HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
+				
+				disableSslVerification();	    
+				URI uri = new URI(cancelEndpoint);  			
+				
+				JSONParser parser = new JSONParser();  
+				disableSslVerification();
+				
+				try {
+					response = (JSONObject) parser.parse(restTemplate.exchange(uri 
+																	, HttpMethod.POST, entity, String.class).getBody());
+									 
+				} catch (ParseException e) {				
+					logger.error("Error cancelling ride "+tripId+". Details "+e.getMessage());
+					
+					response.put("resultMessage", "Error cancelling ride "+tripId+". Details "+e.getMessage());
+					response.put("resultCode", 20010);
+				} 
+			} else {
+				String cancelEndpoint = "https://api.little.bz/service/ride/"+tripId+"/cancel";
+				logger.info("Request to cancel ride  "+cancelEndpoint);		
+				
+				String requestJson = "{\r\n" + 
+						"    \"reason\": \"Wrong Request\"\r\n" + 
+						"}";		
+				
+				logger.info("Cancel Ride Payload: "+ requestJson);
+				
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);	
+				headers.setBearerAuth(generateToken().get("token").toString());				
+				
+				HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
+				
+				disableSslVerification();	    
+				URI uri = new URI(cancelEndpoint);  			
+				
+				JSONParser parser = new JSONParser();  
+				disableSslVerification();
+				
+				try {
+					response = (JSONObject) parser.parse(restTemplate.exchange(uri 
+																	, HttpMethod.POST, entity, String.class).getBody());
+									 
+				} catch (ParseException e) {				
+					logger.error("Error cancelling ride "+tripId+". Details "+e.getMessage());
+					
+					response.put("resultMessage", "Error cancelling ride "+tripId+". Details "+e.getMessage());
+					response.put("resultCode", 20010);
+				} 
+			}
+				
 		} else {
 			response.put("resultMessage", "The tripId is missing");
 			response.put("resultCode", 10010);
@@ -428,6 +692,13 @@ public class LittleCabIntegration {
             ride.setTripId(tripId);
             ride.setStatus("RIDER ASSIGNED");
             ride.setDeliveryCodeSent(0);
+            if(bookRideResponse.containsKey("startCode")) {
+            	ride.setStartCode(bookRideResponse.getAsString("startCode"));
+            }
+            if(bookRideResponse.containsKey("endCode")) {
+            	ride.setEndCode(bookRideResponse.getAsString("endCode"));
+            }
+            ride.setProvider(bookRideResponse.getAsString("provider"));
             
             rideService.save(ride);
 
@@ -513,6 +784,9 @@ public class LittleCabIntegration {
             	break;
             case "RATED":
             	myStatus = "Order Delivered";
+            	break;
+            case "DELIVERED":
+            	myStatus = "Goods Received";
             	break;
             	default :
             	myStatus = "Order Processing";

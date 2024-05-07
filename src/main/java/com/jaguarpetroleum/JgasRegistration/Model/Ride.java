@@ -24,6 +24,13 @@ public class Ride {
 	String status;
 	String parking;
 	Integer deliveryCodeSent;
+	String provider;
+	public String getProvider() {
+		return provider;
+	}
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
 	public Integer getDeliveryCodeSent() {
 		return deliveryCodeSent;
 	}
@@ -107,7 +114,7 @@ public class Ride {
 	}	
 	public Ride(Integer recordNo, String orderNo, String driverName, String driverMobile, String color, String model,
 			String plate, String startCode, String endCode, String tripId, String status, String parking,
-			Integer deliveryCodeSent) {
+			Integer deliveryCodeSent, String provider) {
 		super();
 		this.recordNo = recordNo;
 		this.orderNo = orderNo;
@@ -122,13 +129,14 @@ public class Ride {
 		this.status = status;
 		this.parking = parking;
 		this.deliveryCodeSent = deliveryCodeSent;
+		this.provider = provider;
 	}
 	@Override
 	public String toString() {
 		return "Ride [recordNo=" + recordNo + ", orderNo=" + orderNo + ", driverName=" + driverName + ", driverMobile="
 				+ driverMobile + ", color=" + color + ", model=" + model + ", plate=" + plate + ", startCode="
 				+ startCode + ", endCode=" + endCode + ", tripId=" + tripId + ", status=" + status + ", parking="
-				+ parking + ", deliveryCodeSent=" + deliveryCodeSent + "]";
+				+ parking + ", deliveryCodeSent=" + deliveryCodeSent + ", provider=" + provider + "]";
 	}
 	
 }

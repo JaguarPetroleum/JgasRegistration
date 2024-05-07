@@ -84,7 +84,7 @@ public class jmobilityIntegration {
 	}
 	
 	@PostMapping("/orderRide")
-	private JSONObject bookRide(@RequestBody JSONObject bookDetails) throws ParseException {
+	protected JSONObject bookRide(@RequestBody JSONObject bookDetails) throws ParseException {
 		int pickupCommaIndex = bookDetails.get("pickUpLatLng").toString().indexOf(",");
 		int dropCommaIndex = bookDetails.get("dropOffLatLng").toString().indexOf(",");
 		
