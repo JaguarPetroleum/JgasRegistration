@@ -164,7 +164,7 @@ public class jmobilityIntegration {
 	public JSONObject cancelRide(@RequestBody JSONObject request) throws RestClientException, ParseException, URISyntaxException {
 		JSONObject response = new JSONObject();
 		if(request != null) {
-			String cancelEndpoint = "https://89.38.97.47:5001/v1/customer/cancelTrip";
+			String cancelEndpoint = "http://89.38.97.47:5001/v1/customer/cancelTrip";
 			logger.info("Request to cancel ride  "+cancelEndpoint);		
 			
 			String requestJson = "{\r\n" + 
