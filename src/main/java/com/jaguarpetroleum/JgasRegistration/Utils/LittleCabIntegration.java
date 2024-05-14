@@ -288,7 +288,7 @@ public class LittleCabIntegration {
 	@GetMapping("/rideStatus/{tripId}")
 	public JSONObject rideStatus(@PathVariable String tripId) throws RestClientException, ParseException {
 		JSONObject response = new JSONObject();	
-		if(!tripId.trim().isEmpty()) {
+		if(tripId != null && !tripId.trim().isBlank()) {
 			
 			if(rideService.findByTripId(tripId).getProvider().toString().equals("J-Mobility")) {
 				String statusEndpoint = "http://89.38.97.47:3001/user-sessions/booking/v1/trip/status?tripId="+tripId;
@@ -314,6 +314,9 @@ public class LittleCabIntegration {
 	            	stat = "STARTED";   
 	            	break;
 	            case "STARTED":
+	            	stat = "STARTED";   
+	            	break; 
+	            case "ENROUTE":
 	            	stat = "STARTED";   
 	            	break;
 	            case "ACCEPTED":
@@ -482,7 +485,7 @@ public class LittleCabIntegration {
 	@GetMapping("/cancelRide/{tripId}")
 	public JSONObject cancelRide(@PathVariable String tripId) throws RestClientException, ParseException, URISyntaxException {
 		JSONObject response = new JSONObject();
-		if(!tripId.trim().isEmpty()) {
+		if(tripId != null && !tripId.trim().isBlank()) {
 			
 			if(rideService.findByTripId(tripId).getProvider().toString().equals("J-Mobility")) {
 				String cancelEndpoint = "http://89.38.97.47:5001/v1/customer/cancelTrip";

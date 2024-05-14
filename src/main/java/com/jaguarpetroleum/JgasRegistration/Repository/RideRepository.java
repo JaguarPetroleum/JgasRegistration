@@ -10,7 +10,7 @@ import com.jaguarpetroleum.JgasRegistration.Model.Ride;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Integer> {
-	@Query(value = "SELECT * FROM tb_Ride WHERE orderNo = :orderNo AND STATUS IN ('RIDER ASSIGNED', 'ARRIVED', 'ACCEPTED', 'STARTED', 'ENDED', 'RATED', 'DELIVERED')", nativeQuery = true)
+	@Query(value = "SELECT * FROM tb_Ride WHERE orderNo = :orderNo AND STATUS IN ('RIDER ASSIGNED', 'ARRIVED', 'ACCEPTED', 'STARTED', 'ENDED', 'RATED', 'DELIVERED', 'OPEN', 'ENROUTE') ORDER BY recordNo DESC LIMIT 1", nativeQuery = true)
 	public Ride findByOrderNo(@Param("orderNo") String orderNo);
 	
 	@Query(value = "SELECT * FROM tb_Ride WHERE tripId = :tripId AND status != 'CANCELLED'", nativeQuery = true)
