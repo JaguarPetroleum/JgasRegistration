@@ -138,7 +138,9 @@ public class LittleCabIntegration {
   			JSONObject jmobResponse = new JSONObject();
   			jmobResponse = jmobility.bookRide(details);  		
   			
-  			if(jmobResponse.get("message").toString().toUpperCase().equals("SUCCESS")) {
+  			//Integer.parseInt(jmobResponse.get("code").toString())==200
+  			
+  			if(jmobResponse.get("code").toString().toUpperCase().equals("200")) {
   				Map body = (Map) jmobResponse.get("data");
   	  			JSONObject dataBody = new JSONObject(body);	
   	  			Map rider = (Map) dataBody.get("rider");
@@ -177,110 +179,208 @@ public class LittleCabIntegration {
   	  			return parseBookRide(resp);
   	  			
   			}  else {
-  				return null;
-  			}
-  			
+  				// If it was not successful to get a ride on J-Mobility, ask for a littlecab as below, 
+  				String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
+  	  			JSONObject response = new JSONObject();
+  	  			
+  	  			//added parameter locationId on the request JSONObject
+  	  			//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
+  	  			String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
+  	  			
+  	  			String requestJson = "{\r\n" + 
+  	  					"    \"type\": \"CORPORATE\",\r\n" + 
+  	  					"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
+  	  					"    \"rider\": {\r\n" + 
+  	  					"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
+  	  					"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
+  	  					"        \"email\": \"test@test.com\",\r\n" + 
+  	  					"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
+  	  					"    },\r\n" + 
+  	  					"    \"skipDrivers\": [\r\n" + 
+  	  					"        \"person@mail.com\"\r\n" + 
+  	  					"    ],\r\n" + 
+  	  					"    \"vehicle\": {\r\n" + 
+  	  					"        \"type\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLETYPE+"\",\r\n" + 																											
+  	  					"        \"details\": {\r\n" + 
+  	  					"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
+  	  					"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
+  	  					"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+  	  					"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
+  	  					"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+  	  					"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
+  	  					"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
+  	  					"            \"typeOfAddress\": \""+details.get("typeOfAddress").toString()+"\"\r\n" + 
+  	  					"        }\r\n" + 
+  	  					"    },\r\n" + 
+  	  					"    \"pickUp\": {\r\n" + 
+  	  					"        \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  	  					"        \"address\": \""+details.get("pickUpAddress").toString()+"\"\r\n" + 
+  	  					"    },\r\n" + 
+  	  					"    \"dropOff\": {\r\n" + 
+  	  					"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+  	  					"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
+  	  					"    },\r\n" + 
+  	  					"    \"dropOffs\": [\r\n" + 
+  	  					"        {\r\n" + 
+  	  					"            \"order\": 1,\r\n" + 
+  	  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+  	  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  	  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+  	  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+  	  					"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
+  	  					"        },\r\n" +
+  	  					"        {\r\n" + 
+  	  					"            \"order\": 2,\r\n" + 
+  	  					"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+  	  					"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+  	  					"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
+  	  					"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+  	  					"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
+  	  					"        },\r\n" + 
+  	  					"        {\r\n" + 
+  	  					"            \"order\": 3,\r\n" + 
+  	  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+  	  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+  	  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+  	  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+  	  					"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
+  	  					"        }\r\n" + 
+  	  					"    ],\r\n" + 
+  	  					"    \"corporate\": {\r\n" + 
+  	  					"        \"corporateId\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLECORPORATEID+"\"\r\n" + 																											
+  	  					"    }\r\n" + 
+  	  					"}";					
+  	  			
+  	  			logger.info("Rider booking Payload: "+ requestJson);
+  	  			
+  	  			HttpHeaders headers = new HttpHeaders();
+  	  			headers.setContentType(MediaType.APPLICATION_JSON);	
+  	  			headers.setBearerAuth(generateToken().get("token").toString());				
+  	  			
+  	  			HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
+  	  			
+  	  			disableSslVerification();	    
+  	  			URI uri = new URI(bookingEndpoint);  			
+  	  			
+  	  			JSONParser parser = new JSONParser();  
+  	  			
+  	  			try {
+  	  				response = (JSONObject) parser.parse(restTemplate.exchange(uri 
+  	  																, HttpMethod.POST, entity, String.class).getBody());
+  	  								 
+  	  			} catch (ParseException e) {				
+  	  				logger.error("An error occured while booking for a ride on LittleCab. Details: "+e.getLocalizedMessage());
+  	  			} 			
+  	  			
+  	  			logger.info("LittleCab Booking Response Payload "+ response);			
+  	  			
+  	  			response.appendField("orderNo", details.get("orderNo").toString());
+  	  			response.appendField("provider", "LittleCab");
+
+  	  			return parseBookRide(response);
+  			}  			
   	  		
   		} catch(Exception ex) {
-  			
-  			String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
-  			JSONObject response = new JSONObject();
-  			
-  			//added parameter locationId on the request JSONObject
-  			//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
-  			String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
-  			
-  			String requestJson = "{\r\n" + 
-  					"    \"type\": \"CORPORATE\",\r\n" + 
-  					"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
-  					"    \"rider\": {\r\n" + 
-  					"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
-  					"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
-  					"        \"email\": \"test@test.com\",\r\n" + 
-  					"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
-  					"    },\r\n" + 
-  					"    \"skipDrivers\": [\r\n" + 
-  					"        \"person@mail.com\"\r\n" + 
-  					"    ],\r\n" + 
-  					"    \"vehicle\": {\r\n" + 
-  					"        \"type\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLETYPE+"\",\r\n" + 																											
-  					"        \"details\": {\r\n" + 
-  					"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
-  					"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
-  					"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-  					"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
-  					"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
-  					"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
-  					"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
-  					"            \"typeOfAddress\": \""+details.get("typeOfAddress").toString()+"\"\r\n" + 
-  					"        }\r\n" + 
-  					"    },\r\n" + 
-  					"    \"pickUp\": {\r\n" + 
-  					"        \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-  					"        \"address\": \""+details.get("pickUpAddress").toString()+"\"\r\n" + 
-  					"    },\r\n" + 
-  					"    \"dropOff\": {\r\n" + 
-  					"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
-  					"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
-  					"    },\r\n" + 
-  					"    \"dropOffs\": [\r\n" + 
-  					"        {\r\n" + 
-  					"            \"order\": 1,\r\n" + 
-  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
-  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
-  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-  					"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
-  					"        },\r\n" +
-  					"        {\r\n" + 
-  					"            \"order\": 2,\r\n" + 
-  					"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
-  					"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
-  					"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
-  					"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
-  					"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
-  					"        },\r\n" + 
-  					"        {\r\n" + 
-  					"            \"order\": 3,\r\n" + 
-  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
-  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
-  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
-  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
-  					"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
-  					"        }\r\n" + 
-  					"    ],\r\n" + 
-  					"    \"corporate\": {\r\n" + 
-  					"        \"corporateId\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLECORPORATEID+"\"\r\n" + 																											
-  					"    }\r\n" + 
-  					"}";					
-  			
-  			logger.info("Rider booking Payload: "+ requestJson);
-  			
-  			HttpHeaders headers = new HttpHeaders();
-  			headers.setContentType(MediaType.APPLICATION_JSON);	
-  			headers.setBearerAuth(generateToken().get("token").toString());				
-  			
-  			HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
-  			
-  			disableSslVerification();	    
-  			URI uri = new URI(bookingEndpoint);  			
-  			
-  			JSONParser parser = new JSONParser();  
-  			
-  			try {
-  				response = (JSONObject) parser.parse(restTemplate.exchange(uri 
-  																, HttpMethod.POST, entity, String.class).getBody());
-  								 
-  			} catch (ParseException e) {				
-  				logger.error(e.getLocalizedMessage());
-  			} 			
-  			
-  			logger.info("LittleCab Booking Response Payload "+ response);			
-  			
-  			response.appendField("orderNo", details.get("orderNo").toString());
-  			response.appendField("provider", "LittleCab");
+  			logger.error("An error was encountered while booking for a rider. Details "+ex.getMessage()+". Calling for littleCab");  		
+  		// If it was not successful to get a ride on J-Mobility, ask for a littlecab as below, 
+				String bookingEndpoint = "https://api.little.bz/service/ride/request-ride";
+	  			JSONObject response = new JSONObject();
+	  			
+	  			//added parameter locationId on the request JSONObject
+	  			//String shopContact = locationService.findByLocationId(details.get("locationId").toString()).getPhoneNumber();
+	  			String shopContact = locationService.findByLocationId("NAIROBI").getPhoneNumber();
+	  			
+	  			String requestJson = "{\r\n" + 
+	  					"    \"type\": \"CORPORATE\",\r\n" + 
+	  					"    \"driver\": \""+ com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLEDRIVER+"\",\r\n" + 																							
+	  					"    \"rider\": {\r\n" + 
+	  					"        \"mobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" +      
+	  					"        \"name\": \""+details.get("ferriedPassengerName").toString()+"\",\r\n" + 
+	  					"        \"email\": \"test@test.com\",\r\n" + 
+	  					"        \"picture\": \"https://google.com/mypicture.com\"\r\n" + 
+	  					"    },\r\n" + 
+	  					"    \"skipDrivers\": [\r\n" + 
+	  					"        \"person@mail.com\"\r\n" + 
+	  					"    ],\r\n" + 
+	  					"    \"vehicle\": {\r\n" + 
+	  					"        \"type\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLETYPE+"\",\r\n" + 																											
+	  					"        \"details\": {\r\n" + 
+	  					"            \"itemCarried\": \""+details.get("itemCarried").toString()+"\",\r\n" + 
+	  					"            \"size\": \""+details.get("itemSize").toString()+"\",\r\n" + 
+	  					"            \"recipientName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+	  					"            \"recipientMobile\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" +
+	  					"            \"recipientAddress\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+	  					"            \"contactPerson\": \""+details.get("contactPerson").toString()+"\",\r\n" + 
+	  					"            \"deliveryNotes\": \""+details.get("deliveryNotes").toString()+"\",\r\n" + 
+	  					"            \"typeOfAddress\": \""+details.get("typeOfAddress").toString()+"\"\r\n" + 
+	  					"        }\r\n" + 
+	  					"    },\r\n" + 
+	  					"    \"pickUp\": {\r\n" + 
+	  					"        \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+	  					"        \"address\": \""+details.get("pickUpAddress").toString()+"\"\r\n" + 
+	  					"    },\r\n" + 
+	  					"    \"dropOff\": {\r\n" + 
+	  					"        \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+	  					"        \"address\": \""+details.get("recipientAddress").toString()+"\"\r\n" + 
+	  					"    },\r\n" + 
+	  					"    \"dropOffs\": [\r\n" + 
+	  					"        {\r\n" + 
+	  					"            \"order\": 1,\r\n" + 
+	  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+	  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+	  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+	  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+	  					"            \"notes\": \"Pick "+details.get("itemCarried").toString()+" for customer "+details.get("contactPerson").toString()+" from Jaguar Petroleum. Order Number "+details.get("orderNo").toString()+". Destination "+details.get("recipientAddress").toString()+" \"\r\n" + 
+	  					"        },\r\n" +
+	  					"        {\r\n" + 
+	  					"            \"order\": 2,\r\n" + 
+	  					"            \"address\": \""+details.get("recipientAddress").toString()+"\",\r\n" + 
+	  					"            \"latlng\": \""+details.get("dropOffLatLng").toString()+"\",\r\n" + 
+	  					"            \"contactMobileNumber\": \"254"+details.get("recipientMobile").toString().substring(1)+"\",\r\n" + 
+	  					"            \"contactName\": \""+details.get("recipientName").toString()+"\",\r\n" + 
+	  					"            \"notes\": \"Delivery for "+details.get("contactPerson").toString()+" from Jaguar Petroleum for order number "+details.get("orderNo").toString()+"\"\r\n" + 
+	  					"        },\r\n" + 
+	  					"        {\r\n" + 
+	  					"            \"order\": 3,\r\n" + 
+	  					"            \"address\": \""+details.get("pickUpAddress").toString()+"\",\r\n" + 
+	  					"            \"latlng\": \""+details.get("pickUpLatLng").toString()+"\",\r\n" + 
+	  					"            \"contactMobileNumber\": \"254"+shopContact.substring(1)+"\",\r\n" + 
+	  					"            \"contactName\": \"KNTC-Jaguar Petroleum\",\r\n" + 
+	  					"            \"notes\": \"Return cage for order number "+details.get("orderNo").toString()+" to Jaguar Petroleum\"\r\n" + 
+	  					"        }\r\n" + 
+	  					"    ],\r\n" + 
+	  					"    \"corporate\": {\r\n" + 
+	  					"        \"corporateId\": \""+com.jaguarpetroleum.JgasRegistration.Configs.Constants.LITTLECORPORATEID+"\"\r\n" + 																											
+	  					"    }\r\n" + 
+	  					"}";					
+	  			
+	  			logger.info("Rider booking Payload: "+ requestJson);
+	  			
+	  			HttpHeaders headers = new HttpHeaders();
+	  			headers.setContentType(MediaType.APPLICATION_JSON);	
+	  			headers.setBearerAuth(generateToken().get("token").toString());				
+	  			
+	  			HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);		
+	  			
+	  			disableSslVerification();	    
+	  			URI uri = new URI(bookingEndpoint);  			
+	  			
+	  			JSONParser parser = new JSONParser();  
+	  			
+	  			try {
+	  				response = (JSONObject) parser.parse(restTemplate.exchange(uri 
+	  																, HttpMethod.POST, entity, String.class).getBody());
+	  								 
+	  			} catch (ParseException e) {				
+	  				logger.error("An error occured while booking for a ride on LittleCab. Details: "+e.getLocalizedMessage());
+	  			} 			
+	  			
+	  			logger.info("LittleCab Booking Response Payload "+ response);			
+	  			
+	  			response.appendField("orderNo", details.get("orderNo").toString());
+	  			response.appendField("provider", "LittleCab");
 
-  			return parseBookRide(response);
+	  			return parseBookRide(response);
   		}		
 		
 	}

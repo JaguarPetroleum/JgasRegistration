@@ -88,7 +88,8 @@ public class jmobilityIntegration {
 		int pickupCommaIndex = bookDetails.get("pickUpLatLng").toString().indexOf(",");
 		int dropCommaIndex = bookDetails.get("dropOffLatLng").toString().indexOf(",");
 		
-		bookDetails.appendField("regionalId", regionalId(bookDetails));
+		//bookDetails.appendField("regionalId", regionalId(bookDetails));
+		bookDetails.appendField("regionalId", "");
 		bookDetails.appendField("requester", "VENDOR");
 		bookDetails.appendField("customerId", "55");
 		bookDetails.appendField("fullName", "J-Gas Limited");
