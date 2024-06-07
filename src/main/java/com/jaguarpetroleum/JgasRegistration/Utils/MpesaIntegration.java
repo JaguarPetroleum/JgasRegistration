@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 
+import com.jaguarpetroleum.JgasRegistration.Service.LocationService;
 import com.jaguarpetroleum.JgasRegistration.Service.OrderHDService;
 
 import net.minidev.json.JSONObject;
@@ -34,6 +35,8 @@ public class MpesaIntegration {
 	private static final Logger logger = LoggerFactory.getLogger(MpesaIntegration.class);
 	@Autowired
 	OrderHDService orderHDService;
+	@Autowired
+	LocationService locationService;
 	@Autowired
 	LittleCabIntegration littleCabIntegration;
 	
@@ -144,20 +147,19 @@ public class MpesaIntegration {
                 	AfricasTalkingIntegration africasTalking = new AfricasTalkingIntegration();
                 	africasTalking.sendSms(phoneNumber, 
                     		"Dear Customer, we have received your payment for your gas order no. "+orderNo+". We are currently processing it. ");
-                    
-                	//Added on 23rd Apr 2024, to ensure rider is sought after gas payment is received
-                	//LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
+                                    	
                     logger.info("STKPush payment received and processed. Booking a ride in progress");
-                    
+                  //Added on 23rd Apr 2024, to ensure rider is sought after gas payment is received
                     littleCabIntegration.vendorBookRide(orderNo);
                 	//============================================================================
                 	
                     JSONObject fbiNotification = new JSONObject();
                     fbiNotification.put("orderNo", orderHDService.findByCheckOutId(checkoutRequestId).getOrderNo());
-                    fbiNotification.put("location", orderHDService.findByCheckOutId(checkoutRequestId).getLocationId());
+                    fbiNotification.put("location", orderHDService.findByCheckOutId(checkoutRequestId).getCustomerLocationName());
                     fbiNotification.put("customerName", orderHDService.findByCheckOutId(checkoutRequestId).getCustomerName());
                     fbiNotification.put("productName", orderHDService.findByCheckOutId(checkoutRequestId).getCheckOutRequestId());
-                    
+                    fbiNotification.put("token", locationService.findByLocationId(orderHDService.findByCheckOutId(checkoutRequestId).getLocationId()).getDeviceToken());
+                                        
                     fbi.sendNotification(fbiNotification);
                 }                                
                  
@@ -265,12 +267,12 @@ public class MpesaIntegration {
                 
                 JSONObject fbiNotification = new JSONObject();
                 fbiNotification.put("orderNo", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getOrderNo());
-                fbiNotification.put("location", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getLocationId());
+                fbiNotification.put("location", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getCustomerLocationName());
                 fbiNotification.put("customerName", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getCustomerName());
                 fbiNotification.put("productName", orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getCheckOutRequestId());
+                fbiNotification.put("token", locationService.findByLocationId(orderHDService.findByOrderNo(details.getAsString("ThirdPartyTransID").toString()).getLocationId()).getDeviceToken());
                 
-                fbi.sendNotification(fbiNotification);
-                
+                fbi.sendNotification(fbiNotification);                
                 
                 //LittleCabIntegration littleCabIntegration = new LittleCabIntegration();
                 logger.info("Paybill payment received and processed. Booking a ride in progress");

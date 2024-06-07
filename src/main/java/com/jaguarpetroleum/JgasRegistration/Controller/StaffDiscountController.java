@@ -52,6 +52,7 @@ public class StaffDiscountController {
 		try {
 			return staffDiscountService.findActiveDiscount(locationId);
 		} catch(Exception e) {
+			logger.error("Error getting discount. DETAILS: "+e.getMessage());
 			return null;
 		}
 	}

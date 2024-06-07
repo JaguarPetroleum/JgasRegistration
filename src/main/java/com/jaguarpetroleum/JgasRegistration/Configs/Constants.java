@@ -28,7 +28,8 @@ public class Constants {
  */
  
  
-	//STAGING
+ 
+ 	//STAGING/DEVELOPMENT
 	//MPESA
       public static final String MPESACONSUMERKEY  = "5E6Ijp6GFIRapf9Mdq1ftvcpTZIiorqj1e8sN9xuNGstlMBb";
       public static final String MPESACONSUMERSECRET = "Qd1ely34XM3Ao0AvKKRy5OJlCDeRdG0fHhaqCHQXrlVylnhFjoSeUss3QdYyH9As";
@@ -49,6 +50,9 @@ public class Constants {
       public static final String LITTLESECRET = "QRxkbK1yGUSYa6vW1/oh9A==";
       public static final String LITTLETYPE = "TESTING";
       public static final String LITTLECORPORATEID = "63088819366c8";
-      public static final String LITTLEDRIVER = "phillip.otieno@little.bz";            	  
+      public static final String LITTLEDRIVER = "phillip.otieno@little.bz";         
+      
+      //JMOBILITY
+      
 
 }

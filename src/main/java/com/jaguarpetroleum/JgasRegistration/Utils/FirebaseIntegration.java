@@ -27,35 +27,28 @@ public class FirebaseIntegration {
 		HttpClient httpClient = HttpClientBuilder.create().build();
 
 		// Define the FCM endpoint URL
-		String messageUrl = "https://fcm.googleapis.com/fcm/send";
-
-		// Set your server key
-		String serverKey = "AAAAHrMsEng:APA91bF70BPdImh1N10J3rQB4PcxzzUOB2MQEduB5lVI57ZHGkRQfj4flRjx4OD42gN64Q_JtIA3MPUh9X1H964CWRIBNK8udJDuYaVfc2Wq-BiaAYbxb0t9jeDfXKdrwG-aMsdQRD8r";
-		String senderId = "131855028856";
+		String messageUrl = "http://89.38.97.47:5001/v1/notifications/send/push";
 		
 		// Construct your message payload (customize as needed)
-		String messagePayload = "{"
-		    + "\"data\": {"
-		    + "\"orderNo\": \""+notification.get("orderNo").toString()+"\","
-    		+ "\"customerName\": \""+notification.get("customerName").toString()+"\","
-			+ "\"location\": \""+notification.get("location").toString()+"\","
-		    + "\"productName\": \""+notification.get("productName").toString()+"\""
-		    + "},"
-		    + "\"to\": \""+senderId+"\""
-		    + "}";
+		String messagePayload = "{\r\n"
+				+ "    \"token\": \""+notification.get("token").toString()+"\",\r\n"
+				+ "    \"title\": \"New Order Notification\",\r\n"
+				+ "    \"body\": \"Customer Name: "+notification.get("customerName").toString()
+								+ " Order No: "+ notification.get("orderNo").toString() 
+								+ ". Product: "+ notification.get("productName").toString() 
+								+ ". Location: "+ notification.get("location").toString() + "\",\r\n"
+				+ "    \"product\": \"JGAS\"\r\n"
+				+ "}";
 
 		logger.info("FCM notification payload "+messagePayload);
 		// Create an HTTP POST request
 		HttpPost request = new HttpPost(messageUrl);
 		request.addHeader("content-type", "application/json");
-		request.addHeader("Authorization", "key=" + serverKey);
 		request.setEntity(new StringEntity(messagePayload));
 
 		// Execute the request
 		try {
 		    HttpResponse response = httpClient.execute(request);
-		    // Handle the response (e.g., check for success or error)
-		    // ...
 		    logger.info("FCM response "+response.toString());
 		} catch (IOException e) {
 		    e.printStackTrace();

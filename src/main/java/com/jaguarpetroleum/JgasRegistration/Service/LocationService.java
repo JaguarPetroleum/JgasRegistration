@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jaguarpetroleum.JgasRegistration.Model.Location;
-import com.jaguarpetroleum.JgasRegistration.Model.OrderHD;
 import com.jaguarpetroleum.JgasRegistration.Repository.LocationRepository;
 
 import jakarta.transaction.Transactional;
@@ -35,5 +34,9 @@ public class LocationService {
 	
 	public List<Location> listAll(){
 		return locationRepository.findAll();
+	}
+	
+	public void updateDeviceToken(String deviceToken, String locationId) {
+		locationRepository.updateDeviceToken(deviceToken, locationId);		
 	}
 }

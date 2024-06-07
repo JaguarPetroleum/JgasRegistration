@@ -77,6 +77,6 @@ public interface OrderHDRepository  extends JpaRepository<OrderHD, Integer>{
 	@Query(value = "select DATE_FORMAT(orderDatetime, %m-%d) as orderDate,count(*) as ordersCount from tb_OrderHD where date(orderDatetime) >='?1' group by orderDate;",nativeQuery = true)
     List<OrdersPerDay> findOrdersCountPerDay(String dateFrom);
 	
-	@Query(value = "SELECT COUNT(*) FROM tb_OrderHD WHERE customerNumber = :phoneNumber AND MONTH(recordDatetime) = MONTH(current_date()) AND YEAR(recordDatetime) = YEAR(current_date());", nativeQuery = true)
+	@Query(value = "SELECT COUNT(*) FROM tb_OrderHD WHERE status IN('Order Delivered', 'Order Received', 'Rider Enroute') AND customerNumber = :phoneNumber AND MONTH(recordDatetime) = MONTH(current_date()) AND YEAR(recordDatetime) = YEAR(current_date());", nativeQuery = true)
 	public Integer staffDiscountTimes(String phoneNumber);
 }

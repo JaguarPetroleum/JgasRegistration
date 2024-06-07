@@ -16,6 +16,13 @@ public class Location {
 	String locationName;
 	String locationDescrition;
 	String status;
+	String deviceToken;
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
 	public String getLocationId() {
 		return locationId;
 	}
@@ -62,7 +69,7 @@ public class Location {
 		
 	}
 	public Location(String locationId, String latitude, String longitude, String phoneNumber, String locationName,
-			String locationDescrition, String status) {
+			String locationDescrition, String status, String deviceToken) {
 		super();
 		this.locationId = locationId;
 		this.latitude = latitude;
@@ -71,12 +78,13 @@ public class Location {
 		this.locationName = locationName;
 		this.locationDescrition = locationDescrition;
 		this.status = status;
+		this.deviceToken = deviceToken;
 	}
 	@Override
 	public String toString() {
 		return "Location [locationId=" + locationId + ", latitude=" + latitude + ", longitude=" + longitude
 				+ ", phoneNumber=" + phoneNumber + ", locationName=" + locationName + ", locationDescrition="
-				+ locationDescrition + ", status=" + status + "]";
+				+ locationDescrition + ", status=" + status + ", deviceToken=" + deviceToken + "]";
 	}
 	
 }

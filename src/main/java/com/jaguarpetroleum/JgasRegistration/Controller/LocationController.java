@@ -132,4 +132,21 @@ public class LocationController {
 		response.put("resultMessage", "Success");
 		return response;
 	}
+	
+	@PostMapping("/updateDeviceToken")
+	public JSONObject updateDeviceToken(@RequestBody JSONObject deviceToken) {
+		logger.info("Received details to update device token for notifications "+deviceToken);
+		JSONObject response = new JSONObject();
+		try {
+			locationService.updateDeviceToken(deviceToken.get("deviceToken").toString(),  
+					deviceToken.get("locationId").toString());
+			
+			response.put("resultCode", 0);
+			response.put("resultMessage", "Token has been successfully captured");
+		} catch(Exception e) {
+			response.put("resultCode", 10010);
+			response.put("resultMessage", "An error occured while capturing the token. Details - "+e.getLocalizedMessage());
+		}
+		return response;
+	}
 }

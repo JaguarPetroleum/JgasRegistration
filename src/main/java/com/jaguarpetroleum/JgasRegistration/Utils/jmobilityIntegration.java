@@ -62,19 +62,18 @@ public class jmobilityIntegration {
 		String url = "http://89.38.97.47:5001/v1/trip/tripinfo";		
 		
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		
-		HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
-		String answer = restTemplate.postForObject(url, entity, String.class);
+		headers.setContentType(MediaType.APPLICATION_JSON);		
 		
 		JSONParser parser = new JSONParser();  
 		JSONObject response = new JSONObject();
 		
 		try {
-			 response = (JSONObject) parser.parse(answer);
+			HttpEntity<String> entity = new HttpEntity<String>(payload,headers);
+			String answer = restTemplate.postForObject(url, entity, String.class);
+			response = (JSONObject) parser.parse(answer);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			response.put("code", 500);
+			response.put("data", e.getMessage());
 		} 
 		
 		response = (JSONObject) parser.parse(response.get("data").toString());
@@ -114,17 +113,18 @@ public class jmobilityIntegration {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		
-		HttpEntity<String> entity = new HttpEntity<String>(bookDetails.toJSONString(),headers);
-		String answer = restTemplate.postForObject(url, entity, String.class);
-		
 		JSONParser parser = new JSONParser();  
 		JSONObject response = new JSONObject();
 		
 		try {
-			 response = (JSONObject) parser.parse(answer);
+			disableSslVerification();
+			HttpEntity<String> entity = new HttpEntity<String>(bookDetails.toJSONString(),headers);
+			String answer = restTemplate.postForObject(url, entity, String.class);		
+		
+			response = (JSONObject) parser.parse(answer);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			response.put("code", 500);
+			response.put("message", e.getMessage());
 		} 
 		
 		logger.info("J-Mobility book ride response "+ response);
@@ -135,7 +135,7 @@ public class jmobilityIntegration {
 	public JSONObject rideStatus(@PathVariable String tripId) throws RestClientException, ParseException {
 		JSONObject response = new JSONObject();	
 		if(tripId != null ) {
-			String statusEndpoint = "http://89.38.97.47:3001/user-sessions/booking/v1/trip/status?tripId="+tripId;
+			String statusEndpoint = "http://89.38.97.47:4501/user-sessions/booking/v1/trip/status?tripId="+tripId;
 			logger.info("Request to check ride status "+statusEndpoint);				
 			
 			HttpHeaders headers = new HttpHeaders();
@@ -144,12 +144,14 @@ public class jmobilityIntegration {
 			HttpEntity <String> entity = new HttpEntity<String>(headers);
 		      
 			JSONParser parser = new JSONParser(); 
-			disableSslVerification();
+			
 			try {
+				disableSslVerification();
 				response = (JSONObject) parser.parse(restTemplate.exchange(statusEndpoint , HttpMethod.GET, entity, String.class).getBody());
 								 
 			} catch (ParseException e) {				
-				e.printStackTrace();
+				response.put("resultMessage", e.getMessage());
+				response.put("resultCode", 20010);
 			}
 		} else {
 			response.put("resultMessage", "The tripId is missing");
@@ -190,7 +192,8 @@ public class jmobilityIntegration {
 																, HttpMethod.POST, entity, String.class).getBody());
 								 
 			} catch (ParseException e) {				
-				e.printStackTrace();
+				response.put("resultMessage", e.getMessage());
+				response.put("resultCode", 20010);
 			} 	
 		} else {
 			response.put("resultMessage", "The tripId is missing");

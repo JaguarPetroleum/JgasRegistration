@@ -2,7 +2,7 @@
 <configuration>
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <property name="LOG_FILE" value="/home/app/logs/J-Gas_Test/jgasRegistration.log"/>
+    <property name="LOG_FILE" value="/home/app/logs/J-Gas_Dev/jgasRegistration.log"/>
     
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
